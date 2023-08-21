@@ -5,6 +5,9 @@
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <vector>
+
+#include "Tools.h"
 
 void CheckOpenGLError(const char* stmt, const char* fname, int line)
 {
@@ -33,7 +36,12 @@ Shader::Shader(std::string vertex, std::string fragment) {
 	m_RendererID = CreateShader(vertex, fragment);
 }
 
-void Shader::LoadFromFiles(std::string vertex, std::string fragment) {
+void Shader::LoadFromFiles(std::string vertexPath, std::string fragmentPath) {
+    std::cout << "Loading shader from files..." << std::endl;
+
+    std::string vertex = Tools::OpenFile(vertexPath);
+    std::string fragment = Tools::OpenFile(fragmentPath);
+
 	m_RendererID = CreateShader(vertex, fragment);
 }
 
@@ -42,7 +50,12 @@ Shader::~Shader() {
 }
 
 void Shader::Bind() {
+    if (glIsProgram(m_RendererID) == GL_FALSE) {
+        std::cout << "Program is not valid!" << std::endl;
+    }
+
 	glUseProgram(m_RendererID);
+    Tools::GLErrorCheck("Use Program");
 }
 
 void Shader::Unbind() {
@@ -97,30 +110,59 @@ unsigned int Shader::CompileShader(unsigned int type, const std::string& source)
 	if (!result) {
 		int length;
 		glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
-		char* message = (char*) alloca(length * sizeof(char));
-		glGetShaderInfoLog(id, length, &length, message);
+
+		std::vector<GLchar> message(length);
+		glGetShaderInfoLog(id, length, &length, &message[0]);
 
 		std::cout << "Failed to compile" << (type == GL_VERTEX_SHADER ? "vertex" : "fragment") << "shader!" << std::endl;
-		std::cout << message << std::endl;
+		std::cout << &message[0] << std::endl;
+
 		glDeleteShader(id);
+
 		return 0;
 	}
+
+    std::cout << "Shader compiled successfully!" << std::endl;
 
 	return id;
 }
 
 unsigned int Shader::CreateShader(const std::string& vertexShader, const std::string& fragmentShader) {
-	std::string vertex_src = ReadFile(vertexShader);
-	std::string fragment_src = ReadFile(fragmentShader);
+    std::cout << "Creating shader..." << std::endl;
+
+    std::cout << "Vertex: " << vertexShader << std::endl;
+    std::cout << "Fragment: " << fragmentShader << std::endl;
 
 	unsigned int program = glCreateProgram();
-	unsigned int vs = CompileShader(GL_VERTEX_SHADER, vertex_src);
-	unsigned int fs = CompileShader(GL_FRAGMENT_SHADER, fragment_src);
+	unsigned int vs = CompileShader(GL_VERTEX_SHADER, vertexShader);
+	unsigned int fs = CompileShader(GL_FRAGMENT_SHADER, fragmentShader);
 
 	glAttachShader(program, vs);
 	glAttachShader(program, fs);
 
 	glLinkProgram(program);
+    GLint isLinked = 0;
+    glGetProgramiv(program, GL_LINK_STATUS, (int*) &isLinked);
+    if (isLinked == GL_FALSE){
+        GLint maxLength = 0;
+        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
+
+        std::vector<GLchar> infoLog(maxLength);
+        glGetProgramInfoLog(program, maxLength, &maxLength, &infoLog[0]);
+
+        glDeleteProgram(program);
+        glDeleteShader(vs);
+        glDeleteShader(fs);
+
+        std::cout << "Shader failed to link!" << std::endl;
+        std::cout << &infoLog[0] << std::endl;
+
+        return 0;
+    }
+
+    glDetachShader(program, vs);
+    glDetachShader(program, fs);
+
 	glValidateProgram(program);
 
 	glDeleteShader(vs);
@@ -132,8 +174,6 @@ unsigned int Shader::CreateShader(const std::string& vertexShader, const std::st
 int Shader::GetUniformLocation(const std::string& name) {
 	//if (m_UniformLocationCache.find(name) != m_UniformLocationCache.end())
 		//return m_UniformLocationCache[name];
-
-	std::cout << "attempting to fetch uniform location for " << name << std::endl;
 
 	int location = glGetUniformLocation(m_RendererID, name.c_str());
 	if (location == -1)

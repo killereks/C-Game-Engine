@@ -1,5 +1,6 @@
 #include "Engine.h"
 #include "Shader.h"
+#include "Tools.h"
 
 #include <iostream>
 
@@ -9,7 +10,9 @@
 int main(int argc, char** argv){
     Engine engine(1080, 720);
 
-    engine.StartGameLoop();
+    std::string cwd = argv[0];
+
+    engine.StartGameLoop(cwd);
 
     return 0;
 }

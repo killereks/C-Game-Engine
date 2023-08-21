@@ -3,31 +3,33 @@
 // render the entity
 
 #include "../Shader.h"
+#include "../Camera.h"
 #include <glm/glm.hpp>
+#include <vector>
 
 class Entity {
 public:
 	Entity();
 	~Entity();
 
-	void SetPosition(glm::vec2 position);
-	void SetPosition(float x, float y);
-	void SetRotation(float rotation);
-	void SetScale(glm::vec2 scale);
-	void SetScale(float x, float y);
+    Transform m_Transform;
 
-	glm::vec2 GetPosition();
-	float GetRotation();
-	glm::vec2 GetScale();
-
-	void Render(Shader shader);
+	void Render(Camera* camera, Shader* shader);
 
 private:
 	glm::vec2 m_Position;
 	float m_Rotation;
 	glm::vec2 m_Scale;
 
+    // list of vertices
+    std::vector<float> m_Vertices;
+
+    std::vector<unsigned int> m_Indices;
+
 	// opengl buffers, we just need indices
 	// and vertex positions
 	unsigned int m_VBO;
+
+    // index buffer object
+    unsigned int m_IBO;
 };

@@ -23,6 +23,8 @@ public:
 	void SetVec3(std::string name, glm::vec3 value);
 	void SetMat4(std::string name, glm::mat4 value);
 
+    unsigned int GetID() const { return m_RendererID; }
+
 	private:
 		unsigned int m_RendererID;
 
