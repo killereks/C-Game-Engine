@@ -31,7 +31,9 @@ add_executable(CPP_Game_Engine ${SOURCES}
         "TD Game/src/Components/Transform.cpp"
         "TD Game/src/Components/Transform.h"
         "TD Game/src/Components/Component.cpp"
-        "TD Game/src/Components/Component.h")
+        "TD Game/src/Components/Component.h"
+        "TD Game/src/Components/Mesh.cpp"
+        "TD Game/src/Components/Mesh.h")
 
 # Include the dependencies
 target_include_directories(CPP_Game_Engine PUBLIC

@@ -5,13 +5,18 @@ out vec4 FragColor;
 in vec3 fragPos;
 
 void main(){
-	vec3 lightPos = vec3(0.0f, 3.0f, 0.0f);
-	vec4 color = vec4(1.0, 0.0, 0.2, 1.0);
+	vec4 color = vec4(0.0, 0.0, 0.0, 1.0);
 
-	float dist = length(lightPos - fragPos);
-	float att = 1000.0 / (1.0 + 0.09 * dist + 0.032 * dist * dist);
+	// create a grid pattern
+	int x = int(round(fragPos.x)) % 2;
+	int y = int(round(fragPos.z)) % 2;
 
-	color *= att;
+	if(x + y == 1){
+		color = vec4(0.7f, 0.7f, 0.7f, 1.0f);
+	}
+	else {
+		color = vec4(0.4f, 0.4f, 0.4f, 1.0f);
+	}
 
 	FragColor = color;
 }

@@ -53,7 +53,6 @@ Engine::Engine(int width, int height) {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     ImGui::StyleColorsDark();
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330");
@@ -77,6 +76,15 @@ void Engine::StartGameLoop(const std::string path) {
         float m_frameTime = (float)glfwGetTime();
         float m_deltaTime = m_frameTime - this->lastFrameTime;
         this->lastFrameTime = m_frameTime;
+
+        int curWindowWidth, curWindowHeight;
+        glfwGetWindowSize(window, &curWindowWidth, &curWindowHeight);
+
+        if (curWindowWidth != m_WindowWidth || curWindowHeight != m_WindowHeight) {
+            m_WindowWidth = curWindowWidth;
+            m_WindowHeight = curWindowHeight;
+            glViewport(0, 0, m_WindowWidth, m_WindowHeight);
+        }
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -106,6 +114,8 @@ void Engine::StartGameLoop(const std::string path) {
         ImGui::Text("Total Render Time: %fms", total_time_to_render * 1000.0f);
         ImGui::Text("Predicted FPS: %f", 1.0f / total_time_to_render);
         ImGui::End();
+
+        DrawEditor();
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -183,34 +193,7 @@ void Engine::Awake() {
 }
 
 void Engine::Update(float m_DeltaTime) {
-    // attach this window to top left
-    ImGui::SetNextWindowPos(ImVec2(0, 0));
-    ImGui::SetNextWindowSize(ImVec2(300, 100));
 
-    ImGui::Begin("Game Options", NULL, ImGuiWindowFlags_NoResize);
-    ImGui::Text("Total enemy count: %d", m_Entities.size());
-
-    if (ImGui::Button("Spawn Enemy")){
-        Entity* entity = new Entity();
-
-        m_Entities.push_back(entity);
-    }
-    ImGui::End();
-
-    ImGui::SetNextWindowPos(ImVec2(300, 0));
-    ImGui::SetNextWindowSize(ImVec2(300, 120));
-
-    ImGui::Begin("Camera Options", NULL, ImGuiWindowFlags_NoResize);
-    glm::vec3 right = m_MainCamera->m_Transform.Right();
-    ImGui::Text("Right Vector: %f %f %f", right.x, right.y, right.z);
-    glm::vec3 up = m_MainCamera->m_Transform.Up();
-    ImGui::Text("Up Vector: %f %f %f", up.x, up.y, up.z);
-    glm::vec3 forward = m_MainCamera->m_Transform.Forward();
-    ImGui::Text("Forward Vector: %f %f %f", forward.x, forward.y, forward.z);
-    ImGui::Text("Position: %f %f %f", m_MainCamera->m_Transform.m_Position.x, m_MainCamera->m_Transform.m_Position.y, m_MainCamera->m_Transform.m_Position.z);
-    glm::vec3 rotation = m_MainCamera->m_Transform.GetEuler();
-    ImGui::Text("Rotation: %f %f %f", rotation.x, rotation.y, rotation.z);
-    ImGui::End();
 }
 
 void Engine::Render() {
@@ -218,4 +201,38 @@ void Engine::Render() {
 		// render entity
 		entity->Render(m_MainCamera, _defaultShader);
 	}
+}
+
+void Engine::DrawEditor() {
+    // hierarchy
+    ImGui::SetNextWindowPos(ImVec2(0, 0));
+    ImGui::SetNextWindowSize(ImVec2(300, m_WindowHeight));
+
+    ImGui::Begin("Hierarchy List", NULL, ImGuiWindowFlags_NoResize);
+    if (ImGui::Button("Create Quad")){
+        Entity* ent = new Entity("Quad");
+
+        m_Entities.push_back(ent);
+    }
+
+    for (Entity* entity : m_Entities) {
+        ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), entity->Name().c_str());
+    }
+    ImGui::End();
+
+    // inspector
+    ImGui::SetNextWindowPos(ImVec2(m_WindowWidth - 300, 0));
+    ImGui::SetNextWindowSize(ImVec2(300, m_WindowHeight));
+
+    ImGui::Begin("Inspector", NULL, ImGuiWindowFlags_NoResize);
+    ImGui::Text("Inspector");
+    ImGui::End();
+
+    // project files
+    ImGui::SetNextWindowPos(ImVec2(300, m_WindowHeight - 150));
+    ImGui::SetNextWindowSize(ImVec2(m_WindowWidth - 600, 150));
+
+    ImGui::Begin("Project Files", NULL, ImGuiWindowFlags_NoResize);
+    ImGui::Text("Project Files");
+    ImGui::End();
 }

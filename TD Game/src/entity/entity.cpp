@@ -4,7 +4,9 @@
 #include <gl/glew.h>
 #include <iostream>
 
-Entity::Entity() {
+Entity::Entity(std::string m_Name) {
+    this->m_Name = m_Name;
+
     // create quad
     m_Vertices.push_back(-0.5f);
     m_Vertices.push_back(0.0f);
@@ -31,7 +33,7 @@ Entity::Entity() {
     m_Indices.push_back(2);
 
     m_Transform.m_Position = glm::vec3(0.0f, -1.0f, 0.0f);
-    m_Transform.m_Scale = glm::vec3(50.0f);
+    m_Transform.m_Scale = glm::vec3(100.0f);
 
 	glGenBuffers(1, &m_VBO);
     glGenBuffers(1, &m_IBO);
@@ -44,6 +46,8 @@ Entity::Entity() {
 }
 
 Entity::~Entity() {
+    glDeleteBuffers(1, &m_VBO);
+    glDeleteBuffers(1, &m_IBO);
 }
 
 void Entity::Render(Camera* camera, Shader* shader) {

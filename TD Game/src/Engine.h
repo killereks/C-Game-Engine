@@ -34,4 +34,6 @@ private:
     Shader* _defaultShader;
 
     std::vector<Entity*> m_Entities;
+
+    void DrawEditor();
 };
