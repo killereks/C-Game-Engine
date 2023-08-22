@@ -1,5 +1,8 @@
+#include "Components/Entity.h"
+#include "Components/Component.h"
 #include "Engine.h"
 #include "Shader.h"
+#include "Camera.h"
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -10,6 +13,7 @@
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <Mesh.h>
 
 Engine::Engine(int width, int height) {
     GLFWwindow* window;
@@ -38,6 +42,7 @@ Engine::Engine(int width, int height) {
 
     if (glewInit() != GLEW_OK) {
         std::cout << "Glew Initialize Error!" << std::endl;
+        return;
     }
 
     // setup opengl stuff
@@ -62,14 +67,7 @@ void Engine::StartGameLoop(const std::string path) {
     std::cout << "Starting Game Loop..." << std::endl;
     std::cout << "Loading Shaders... at " << path << std::endl;
 
-    const std::string prefix = "C:/Users/ssnee/Desktop/CPP-Game-Engine/TD Game";
-
     std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
-
-    Shader shader = Shader();
-    shader.LoadFromFiles(prefix+"/src/shaders/default/vertex.glsl", prefix + "/src/shaders/default/fragment.glsl");
-
-    _defaultShader = &shader;
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) {
@@ -186,20 +184,50 @@ Engine::~Engine() {
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
 	glfwTerminate();
+
+    delete m_MainCamera;
+	delete _defaultShader;
+
+    for (auto entity : m_Entities) {
+		delete entity;
+	}
 }
 
 void Engine::Awake() {
     m_MainCamera = new Camera();
+
+    m_MainCamera->m_Transform.m_Position = glm::vec3(0.0f, 2.0f, 5.0f);
+
+    // update every entity
+    for (auto entity : m_Entities) {
+        for (auto component : entity->m_Components) {
+            component->Init();
+        }
+    }
+
+    const std::string prefix = "C:/Users/ssnee/Desktop/CPP-Game-Engine/TD Game";
+    Shader* shader = new Shader();
+    shader->LoadFromFiles(prefix + "/src/shaders/default/vertex.glsl", prefix + "/src/shaders/default/fragment.glsl");
+
+    _defaultShader = shader;
 }
 
 void Engine::Update(float m_DeltaTime) {
-
+    // update every entity
+    for (auto& entity : m_Entities) {
+        for (auto& component : entity->m_Components) {
+			component->Update(m_DeltaTime);
+		}
+    }
 }
 
 void Engine::Render() {
     for (Entity* entity : m_Entities) {
 		// render entity
-		entity->Render(m_MainCamera, _defaultShader);
+        Mesh* mesh = nullptr;
+        if (entity->TryGetComponent<Mesh>(mesh)) {
+            mesh->Render(m_MainCamera, _defaultShader);
+        }
 	}
 }
 
@@ -209,11 +237,22 @@ void Engine::DrawEditor() {
     ImGui::SetNextWindowSize(ImVec2(300, m_WindowHeight));
 
     ImGui::Begin("Hierarchy List", NULL, ImGuiWindowFlags_NoResize);
-    if (ImGui::Button("Create Quad")){
-        Entity* ent = new Entity("Quad");
+    if (ImGui::Button("Create Plane")){
+        Entity* ent = new Entity("Plane");
+
+        Mesh* mesh = ent->AddComponent<Mesh>();
+        mesh->CreatePlane(glm::vec2(100.0f, 100.0f));
 
         m_Entities.push_back(ent);
     }
+    if (ImGui::Button("Create Cube")) {
+		Entity* ent = new Entity("Cube");
+
+        Mesh* mesh = ent->AddComponent<Mesh>();
+        mesh->CreateCube(glm::vec3(1.0f, 1.0f, 1.0f));
+
+		m_Entities.push_back(ent);
+	}
 
     for (Entity* entity : m_Entities) {
         ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), entity->Name().c_str());

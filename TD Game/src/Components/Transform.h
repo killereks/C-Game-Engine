@@ -2,13 +2,11 @@
 // Created by killereks on 21/08/2023.
 //
 
-#ifndef CPP_GAME_ENGINE_TRANSFORM_H
-#define CPP_GAME_ENGINE_TRANSFORM_H
+#pragma once
 
-
+#include "Component.h"
 #include "vec3.hpp"
 #include "ext/quaternion_float.hpp"
-#include "Component.h"
 
 class Transform : public Component {
 public:
@@ -24,9 +22,9 @@ public:
 
     void Translate(glm::vec3 translation);
 
+    void Update(float dt) override;
+    void Init() override;
+
     void SetRotationEuler(glm::vec3 euler);
     glm::vec3 GetEuler();
 };
-
-
-#endif //CPP_GAME_ENGINE_TRANSFORM_H

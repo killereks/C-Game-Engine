@@ -6,6 +6,14 @@
 #include "Transform.h"
 #include "gtx/quaternion.hpp"
 
+void Transform::Update(float dt) {
+
+}
+
+void Transform::Init() {
+
+}
+
 glm::mat4 Transform::GetModelMatrix() {
     glm::mat4 modelMatrix = glm::mat4(1.0f);
 

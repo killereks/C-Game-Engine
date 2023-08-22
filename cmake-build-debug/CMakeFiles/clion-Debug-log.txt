@@ -1,4 +1,0 @@
-"C:\Program Files\JetBrains\CLion 2023.2\bin\cmake\win\x64\bin\cmake.exe" -DCMAKE_BUILD_TYPE=Debug "-DCMAKE_MAKE_PROGRAM=C:/Program Files/JetBrains/CLion 2023.2/bin/ninja/win/x64/ninja.exe" -D/GLFW/lib-vc2022/glfw3.lib_DIR:PATH=/GLFW/lib-vc2022/glfw3.lib -Dglfw3_DIR:PATH=glfw3 -DGLEW_DIR:PATH=GLEW -G Ninja -S C:\Users\ssnee\Desktop\CPP-Game-Engine -B C:\Users\ssnee\Desktop\CPP-Game-Engine\cmake-build-debug
--- Configuring done (0.1s)
--- Generating done (0.0s)
--- Build files have been written to: C:/Users/ssnee/Desktop/CPP-Game-Engine/cmake-build-debug

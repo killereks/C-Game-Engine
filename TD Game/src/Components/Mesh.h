@@ -11,6 +11,8 @@
 #include "Component.h"
 #include "vec3.hpp"
 #include "vec2.hpp"
+#include "../Camera.h"
+#include "../Shader.h"
 
 class Mesh : public Component {
     std::vector<glm::vec3> m_Vertices;
@@ -20,20 +22,29 @@ class Mesh : public Component {
 
     unsigned int m_VAO; // Vertex Array Object
     unsigned int m_VBO; // Vertex Buffer Object
+    unsigned int m_UBO; // UV Buffer Object
     unsigned int m_IBO; // Index Buffer Object
     unsigned int m_NBO; // Normal Buffer Object
+
+    void Draw();
 
     public:
 
     Mesh(std::vector<glm::vec3> vertices, std::vector<glm::vec2> uvs, std::vector<unsigned int> indices);
+    Mesh();
 
-    static Mesh CreateCube(glm::vec3 size);
-    static Mesh CreateSphere(float radius, int rings, int sectors);
-    static Mesh CreatePlane(glm::vec2 size);
-    static Mesh LoadFromFile(std::string path);
+    void CreateCube(glm::vec3 size);
+    void CreateSphere(float radius, int rings, int sectors);
+    void CreatePlane(glm::vec2 size);
+    void LoadFromFile(std::string path);
+
+    void Init() override;
+    void Update(float dt) override;
+
+    void Render(Camera* camera, Shader* shader);
 
     void RecalculateNormals();
-    void Update();
+    void UpdateBuffers();
 };
 
 

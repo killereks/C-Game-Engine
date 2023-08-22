@@ -1,7 +1,8 @@
 #include <iostream>
 #include <vector>
 
-#include "entity/entity.h"
+#include "Components/Transform.h"
+#include "Components/Entity.h"
 #include "Camera.h"
 
 #include <GL/glew.h>

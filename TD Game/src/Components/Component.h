@@ -2,16 +2,17 @@
 // Created by killereks on 21/08/2023.
 //
 
-#ifndef CPP_GAME_ENGINE_COMPONENT_H
-#define CPP_GAME_ENGINE_COMPONENT_H
 
+#pragma once
+
+//#include "Entity.h"
+
+class Entity;
 
 class Component {
 public:
-   void Update();
-   void Render();
-   void Init();
+	virtual void Update(float m_DeltaTime) = 0;
+	virtual void Init() = 0;
+
+	Entity* m_Owner;
 };
-
-
-#endif //CPP_GAME_ENGINE_COMPONENT_H

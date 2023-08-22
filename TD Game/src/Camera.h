@@ -2,8 +2,7 @@
 // Created by killereks on 21/08/2023.
 //
 
-#ifndef CPP_GAME_ENGINE_CAMERA_H
-#define CPP_GAME_ENGINE_CAMERA_H
+#pragma once
 
 #include "Components/Transform.h"
 
@@ -13,6 +12,3 @@ public:
     glm::mat4 GetProjectionMatrix();
     Transform m_Transform;
 };
-
-
-#endif //CPP_GAME_ENGINE_CAMERA_H

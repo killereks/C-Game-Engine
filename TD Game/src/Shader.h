@@ -1,4 +1,7 @@
-#pragma once
+
+
+#ifndef CPP_GAME_ENGINE_SHADER_H
+#define CPP_GAME_ENGINE_SHADER_H
 
 #include <string>
 
@@ -37,3 +40,5 @@ public:
 		// cache for uniforms
 		std::unordered_map<std::string, int> m_UniformLocationCache;
 };
+
+#endif //CPP_GAME_ENGINE_SHADER_H
