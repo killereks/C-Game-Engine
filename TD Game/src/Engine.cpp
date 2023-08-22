@@ -236,7 +236,7 @@ void Engine::DrawEditor() {
     ImGui::SetNextWindowPos(ImVec2(0, 0));
     ImGui::SetNextWindowSize(ImVec2(300, m_WindowHeight));
 
-    ImGui::Begin("Hierarchy List", NULL, ImGuiWindowFlags_NoResize);
+    ImGui::Begin("Create Objects", NULL, ImGuiWindowFlags_NoResize);
     if (ImGui::Button("Create Plane")){
         Entity* ent = new Entity("Plane");
 
@@ -254,9 +254,21 @@ void Engine::DrawEditor() {
 		m_Entities.push_back(ent);
 	}
 
+    ImGui::BeginChild("Hierarchy", ImVec2(0, 0), true);
+
+    ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.5f));
+
     for (Entity* entity : m_Entities) {
-        ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), entity->Name().c_str());
+        if (ImGui::Button(entity->Name().c_str(), ImVec2(-FLT_MIN, 0))) {
+
+        }
+        //ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), entity->Name().c_str());
     }
+
+    ImGui::PopStyleVar();
+
+    ImGui::EndChild();
+
     ImGui::End();
 
     // inspector
