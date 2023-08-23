@@ -11,4 +11,8 @@ public:
     glm::mat4 GetViewMatrix();
     glm::mat4 GetProjectionMatrix();
     Transform m_Transform;
+
+    float m_FOV = 60.0f;
+    float m_Near = 0.1f;
+    float m_Far = 1000.0f;
 };

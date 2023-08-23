@@ -260,6 +260,8 @@ void Engine::DrawEditor() {
             if (ImGui::MenuItem("New Scene")) {
 
             }
+
+            ImGui::EndMenu();
         }
 
         if (ImGui::BeginMenu("Entity Creator")) {
@@ -279,6 +281,25 @@ void Engine::DrawEditor() {
 
 				m_Entities.push_back(ent);
 			}
+            if (ImGui::MenuItem("Create Sphere (1x1)")) {
+                Entity* ent = new Entity(GetValidName("Sphere"));
+
+                Mesh* mesh = ent->AddComponent<Mesh>();
+                mesh->CreateSphere(1.0f, 16, 16);
+
+                m_Entities.push_back(ent);
+            }
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Camera Settings")) {
+            ImGui::BeginGroup();
+            ImGui::DragFloat("FOV", &m_MainCamera->m_FOV, 1.f, 1.f, 179.f, "%.0f");
+            ImGui::DragFloat("Near", &m_MainCamera->m_Near, 0.1f, 0.1f, 100.f, "%.1f");
+            ImGui::DragFloat("Far", &m_MainCamera->m_Far, 1.f, 1.f, 1000.f, "%.0f");
+            ImGui::End();
+
+            ImGui::EndMenu();
         }
     }
 
@@ -303,10 +324,10 @@ void Engine::DrawEditor() {
 			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
 		}
 
-        if (ImGui::Button(entity->Name().c_str(), ImVec2(-FLT_MIN, 0))) {
+        if (ImGui::Button(entity->m_Name.c_str(), ImVec2(-FLT_MIN, 0))) {
             m_SelectedEntity = entity;
 
-            std::cout << "Selected Entity: " << m_SelectedEntity->Name() << index << std::endl;
+            std::cout << "Selected Entity: " << m_SelectedEntity->m_Name << index << std::endl;
         }
 
         index++;
@@ -330,7 +351,7 @@ void Engine::DrawEditor() {
 
     ImGui::Begin("Inspector", NULL, ImGuiWindowFlags_NoResize);
     if (m_SelectedEntity != nullptr) {
-        ImGui::Text(m_SelectedEntity->Name().c_str());
+        ImGui::Text(m_SelectedEntity->m_Name.c_str());
 
         if (ImGui::CollapsingHeader("Transform")) {
             ImGui::BeginGroup();
@@ -371,7 +392,7 @@ void Engine::DrawEditor() {
 
 std::string Engine::GetValidName(std::string name) {
     for (Entity* ent : m_Entities) {
-        if (ent->Name() == name) {
+        if (ent->m_Name == name) {
             return GetValidName(name + " (1)");
         }
     }
@@ -393,13 +414,13 @@ void Engine::EditTransform(Entity* ent) {
     ImGuiIO& io = ImGui::GetIO();
     ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
 
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+    if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) {
 		m_CurrentOperation = ImGuizmo::TRANSLATE;
 	}
-    else if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
+    else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) {
         m_CurrentOperation = ImGuizmo::ROTATE;
 	}
-    else if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
+    else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS) {
         m_CurrentOperation = ImGuizmo::SCALE;
 	}
 

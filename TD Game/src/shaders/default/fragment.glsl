@@ -4,8 +4,11 @@ out vec4 FragColor;
 
 in vec3 fragPos;
 
+in vec3 Normal;
+in vec2 TexCoords;
+
 void main(){
-	vec4 color = vec4(0.0, 0.0, 0.0, 1.0);
+	/*vec4 color = vec4(0.0, 0.0, 0.0, 1.0);
 
 	// create a grid pattern
 	int x = int(round(fragPos.x)) % 2;
@@ -18,5 +21,5 @@ void main(){
 		color = vec4(0.4f, 0.4f, 0.4f, 1.0f);
 	}
 
-	FragColor = color;
+	FragColor = color;*/
 }

@@ -4,7 +4,9 @@ C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(111,28): warning C
 C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(129,19): warning C4018: '<': signed/unsigned mismatch
 C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(187,36): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
 C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(188,36): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
-C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(287,56): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(325,50): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(326,56): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(308,56): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(346,50): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(347,56): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+  main.cpp
+  Generating Code...
   TD Game.vcxproj -> C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\Debug\TD Game.exe

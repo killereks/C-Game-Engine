@@ -130,6 +130,35 @@ void Mesh::CreateSphere(float radius, int rings, int sectors) {
     std::vector<glm::vec2> uvs;
     std::vector<unsigned int> indices;
 
+    float const R = 1.0f / static_cast<float>(rings - 1);
+    float const S = 1.0f / static_cast<float>(sectors - 1);
+
+    const float M_PI = 3.14159265359f;
+    const float M_PI_2 = 1.57079632679f;
+
+    for (int r = 0; r < rings; ++r) {
+        for (int s = 0; s < sectors; ++s) {
+            float const y = sin(-M_PI_2 + M_PI * r * R);
+            float const x = cos(2 * M_PI * s * S) * sin(M_PI * r * R);
+            float const z = sin(2 * M_PI * s * S) * sin(M_PI * r * R);
+
+            verts.push_back(glm::vec3(x, y, z) * radius);
+            uvs.push_back(glm::vec2(s * S, r * R));
+        }
+    }
+
+    for (int r = 0; r < rings - 1; ++r) {
+        for (int s = 0; s < sectors - 1; ++s) {
+            indices.push_back(r * sectors + (s + 1));
+            indices.push_back(r * sectors + s);
+            indices.push_back((r + 1) * sectors + (s + 1));
+
+            indices.push_back((r + 1) * sectors + (s + 1));
+            indices.push_back(r * sectors + s);
+            indices.push_back((r + 1) * sectors + s);
+        }
+    }
+
     this->m_Vertices = verts;
     this->m_UVs = uvs;
     this->m_Indices = indices;
@@ -257,4 +286,15 @@ void Mesh::DrawInspector() {
     ImGui::Text("Vertices: %d", m_Vertices.size());
     ImGui::Text("UVs: %d", m_UVs.size());
     ImGui::Text("Indices: %d", m_Indices.size());
+
+    if (ImGui::Button("Create Cube")) {
+		CreateCube(glm::vec3(1, 1, 1));
+	}
+    if (ImGui::Button("Create Sphere")) {
+		CreateSphere(1, 32, 32);
+	}
+
+    if (ImGui::Button("Create Plane")) {
+		CreatePlane(glm::vec2(1, 1));
+	}
 }

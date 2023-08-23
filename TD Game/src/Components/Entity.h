@@ -21,8 +21,6 @@ public:
 
     Transform m_Transform;
 
-    std::string Name() { return m_Name; }
-
     std::vector<Component*> m_Components;
 
     template<typename T>
@@ -74,6 +72,5 @@ public:
         }
     }
 
-private:
     std::string m_Name;
 };

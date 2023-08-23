@@ -12,5 +12,7 @@ Entity::Entity(std::string m_Name) {
 }
 
 Entity::~Entity() {
-
+    for (Component* component : m_Components) {
+		delete component;
+	}
 }
