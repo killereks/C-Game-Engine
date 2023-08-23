@@ -1,10 +1,11 @@
 ﻿  Engine.cpp
-C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(108,54): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(111,28): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(130,19): warning C4018: '<': signed/unsigned mismatch
-C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(217,36): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
+C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(109,54): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(112,28): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(131,19): warning C4018: '<': signed/unsigned mismatch
 C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(218,36): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
-C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(357,56): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(395,50): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(396,56): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(219,36): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
+C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(289,23): warning C4018: '<': signed/unsigned mismatch
+C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(387,56): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(425,50): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(426,56): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
   TD Game.vcxproj -> C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\Debug\TD Game.exe

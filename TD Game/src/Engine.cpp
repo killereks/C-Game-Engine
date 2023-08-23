@@ -14,6 +14,7 @@
 #include <GLFW/glfw3.h>
 #include <Mesh.h>
 #include <ext.hpp>
+#include <Light.h>
 
 Engine::Engine(int width, int height) {
     GLFWwindow* window;
@@ -140,7 +141,7 @@ void Engine::StartGameLoop(const std::string path) {
         ImVec2 plotPos = ImGui::GetCursorScreenPos();
         ImVec2 plotSize = ImGui::GetContentRegionAvail();
         float xScale = plotSize.x / 100;
-        float yScale = plotSize.y / 100;
+        float yScale = plotSize.y;
 
         for (int i = 1; i < 100; i++) {
             // Calculate the line start and end positions
@@ -184,7 +185,7 @@ void Engine::StartGameLoop(const std::string path) {
             float speed = 5.0f;
 
             if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-                speed *= 2.0f;
+                speed *= 5.0f;
 
             if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
                 m_MainCamera->m_Transform.Translate(-m_MainCamera->m_Transform.Forward() * m_deltaTime * speed);
@@ -274,6 +275,26 @@ void Engine::Update(float m_DeltaTime) {
 }
 
 void Engine::Render() {
+    _defaultShader->Bind();
+
+    std::vector<Light*> lights;
+
+    for (auto& entity : m_Entities) {
+		Light* light = nullptr;
+        if (entity->TryGetComponent<Light>(light)) {
+            lights.push_back(light);
+		}
+	}
+
+    for (int i = 0; i < lights.size(); i++) {
+        std::string uniformName = "lights[" + std::to_string(i) + "]";
+
+        _defaultShader->SetVec3(uniformName + ".position", lights[i]->m_Owner->m_Transform.m_Position);
+        _defaultShader->SetVec3(uniformName + ".color", lights[i]->m_Color);
+        _defaultShader->SetFloat(uniformName + ".intensity", lights[i]->m_Intensity);
+        _defaultShader->SetFloat(uniformName + ".range", lights[i]->m_Range);
+	}
+
     for (Entity* entity : m_Entities) {
 		// render entity
         Mesh* mesh = nullptr;
@@ -281,6 +302,8 @@ void Engine::Render() {
             mesh->Render(m_MainCamera, _defaultShader);
         }
 	}
+
+    _defaultShader->Unbind();
 }
 
 void Engine::DrawEditor() {
@@ -338,6 +361,13 @@ void Engine::DrawEditor() {
 
                 m_Entities.push_back(ent);
             }
+            if (ImGui::MenuItem("Create Light")) {
+				Entity* ent = new Entity(GetValidName("Light"));
+
+				Light* light = ent->AddComponent<Light>();
+
+				m_Entities.push_back(ent);
+			}
             ImGui::EndMenu();
         }
 
