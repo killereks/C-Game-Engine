@@ -76,7 +76,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);GLEW_STATIC</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\glm;$(SolutionDir)imgui;$(SolutionDir)Dependencies;$(SolutionDir)src;$(SolutionDir)src\Components;$(SolutionDir)Dependencies\GL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\glm;$(SolutionDir)imgui;$(SolutionDir)Dependencies;$(SolutionDir)src;$(SolutionDir)src\Components;$(SolutionDir)Dependencies\GL;$(SolutionDir)Dependencies\OpenFBX;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -94,7 +94,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);GLEW_STATIC</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\glm;$(SolutionDir)imgui;$(SolutionDir)Dependencies;$(SolutionDir)src;$(SolutionDir)src\Components;$(SolutionDir)Dependencies\GL;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\glm;$(SolutionDir)imgui;$(SolutionDir)Dependencies;$(SolutionDir)src;$(SolutionDir)src\Components;$(SolutionDir)Dependencies\GL;$(SolutionDir)Dependencies\OpenFBX;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -149,6 +149,9 @@
     <ClCompile Include="Dependencies\gizmos\ImGradient.cpp" />
     <ClCompile Include="Dependencies\gizmos\ImGuizmo.cpp" />
     <ClCompile Include="Dependencies\gizmos\ImSequencer.cpp" />
+    <ClCompile Include="Dependencies\OpenFBX\miniz.c" />
+    <ClCompile Include="Dependencies\OpenFBX\ofbx.cpp" />
+    <ClCompile Include="imgui\filedialog\ImGuiFileDialog.cpp" />
     <ClCompile Include="imgui\imgui.cpp" />
     <ClCompile Include="imgui\imgui_demo.cpp" />
     <ClCompile Include="imgui\imgui_draw.cpp" />
@@ -170,6 +173,25 @@
     <ClCompile Include="src\Tools.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Dependencies\FBXImport\include\FBX\Decoder.h" />
+    <ClInclude Include="Dependencies\FBXImport\include\FBX\Face.h" />
+    <ClInclude Include="Dependencies\FBXImport\include\FBX\FBXImport.h" />
+    <ClInclude Include="Dependencies\FBXImport\include\FBX\Material.h" />
+    <ClInclude Include="Dependencies\FBXImport\include\FBX\Mesh.h" />
+    <ClInclude Include="Dependencies\FBXImport\include\FBX\Model.h" />
+    <ClInclude Include="Dependencies\FBXImport\include\FBX\Node.h" />
+    <ClInclude Include="Dependencies\FBXImport\include\FBX\Object.h" />
+    <ClInclude Include="Dependencies\FBXImport\include\FBX\Parser.h" />
+    <ClInclude Include="Dependencies\FBXImport\include\FBX\Process.h" />
+    <ClInclude Include="Dependencies\FBXImport\include\FBX\Scene.h" />
+    <ClInclude Include="Dependencies\FBXImport\include\FBX\Settings.h" />
+    <ClInclude Include="Dependencies\FBXImport\include\FBX\Span.h" />
+    <ClInclude Include="Dependencies\FBXImport\include\FBX\Stream.h" />
+    <ClInclude Include="Dependencies\FBXImport\include\FBX\Texture.h" />
+    <ClInclude Include="Dependencies\FBXImport\include\FBX\TriangulateProcess.h" />
+    <ClInclude Include="Dependencies\FBXImport\include\FBX\Util.h" />
+    <ClInclude Include="Dependencies\FBXImport\include\FBX\Vector2.h" />
+    <ClInclude Include="Dependencies\FBXImport\include\FBX\Vector3.h" />
     <ClInclude Include="Dependencies\GLEW\include\GL\eglew.h" />
     <ClInclude Include="Dependencies\GLEW\include\GL\freeglut.h" />
     <ClInclude Include="Dependencies\GLEW\include\GL\freeglut_ext.h" />
@@ -473,6 +495,10 @@
     <ClInclude Include="Dependencies\gizmos\ImGuizmo.h" />
     <ClInclude Include="Dependencies\gizmos\ImSequencer.h" />
     <ClInclude Include="Dependencies\gizmos\ImZoomSlider.h" />
+    <ClInclude Include="Dependencies\OpenFBX\miniz.h" />
+    <ClInclude Include="Dependencies\OpenFBX\ofbx.h" />
+    <ClInclude Include="imgui\filedialog\ImGuiFileDialog.h" />
+    <ClInclude Include="imgui\filedialog\ImGuiFileDialogConfig.h" />
     <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />
     <ClInclude Include="imgui\imgui_impl_glfw.h" />

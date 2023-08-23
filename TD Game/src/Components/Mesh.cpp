@@ -11,8 +11,10 @@
 #include <Shader.h>
 #include <iostream>
 #include "Entity.h"
-//#include "ofbx.h"
 #include "imgui.h"
+#include <fstream>
+
+#include <OpenFBX/ofbx.h>
 
 void Mesh::Update(float dt) {
 
@@ -23,11 +25,64 @@ void Mesh::Init() {
 }
 
 void Mesh::LoadFromFile(std::string path) {
-    std::vector<glm::vec3> vertices;
-    std::vector<glm::vec2> uvs;
-    std::vector<unsigned int> indices;
+    std::ifstream file(path, std::ios::binary | std::ios::ate);
+    std::streamsize size = file.tellg();
+    file.seekg(0, std::ios::beg);
+    std::vector<char> buffer(size);
+    file.read(buffer.data(), size);
 
-    std::cout << "Not implemented yet" << std::endl;
+    auto flags = ofbx::LoadFlags::TRIANGULATE | ofbx::LoadFlags::IGNORE_CAMERAS;
+
+    ofbx::IScene* scene = ofbx::load((ofbx::u8*)buffer.data(), size, (ofbx::u64) flags);
+
+    if (scene == nullptr) {
+        std::cout << "Failed to load FBX file at " << path << std::endl;
+        return;
+    }
+
+    std::vector<glm::vec3> verts;
+    std::vector<glm::vec2> uv;
+    std::vector<glm::vec3> norms;
+    std::vector<unsigned int> inds;
+
+    unsigned int indexOffset = 0;
+
+    int meshCount = scene->getMeshCount();
+    for (int i = 0; i < meshCount; i++) {
+        const ofbx::Mesh* mesh = scene->getMesh(i);
+
+        const ofbx::Geometry* geom = mesh->getGeometry();
+        const ofbx::Vec3* vertices = geom->getVertices();
+        const ofbx::Vec2* uvs = geom->getUVs();
+        const ofbx::Vec3* normals = geom->getNormals();
+
+        int vertexCount = geom->getVertexCount();
+        const int* indices = geom->getFaceIndices();
+
+        for (int j = 0; j < vertexCount; j++) {
+            verts.push_back(glm::vec3(vertices[j].x, vertices[j].y, vertices[j].z));
+            uv.push_back(glm::vec2(uvs[j].x, uvs[j].y));
+            norms.push_back(glm::vec3(normals[j].x, normals[j].y, normals[j].z));
+        }
+
+        if (geom->getIndexCount() % 3 != 0) {
+			std::cout << "Invalid index count" << std::endl;
+			return;
+		}
+
+        for (int j = 0; j < geom->getIndexCount(); j++) {
+            inds.push_back(indices[j] + indexOffset);
+        }
+
+        indexOffset += vertexCount;
+
+        m_Vertices = verts;
+        m_UVs = uv;
+        m_Normals = norms;
+        m_Indices = inds;
+
+        UpdateBuffers();
+    }
 }
 
 void Mesh::RecalculateNormals() {
@@ -122,6 +177,7 @@ void Mesh::CreateCube(glm::vec3 size) {
     this->m_UVs = uvs;
     this->m_Indices = indices;
 
+    RecalculateNormals();
     UpdateBuffers();
 }
 
@@ -163,6 +219,7 @@ void Mesh::CreateSphere(float radius, int rings, int sectors) {
     this->m_UVs = uvs;
     this->m_Indices = indices;
 
+    RecalculateNormals();
     UpdateBuffers();
 }
 
@@ -196,6 +253,7 @@ void Mesh::CreatePlane(glm::vec2 size) {
 
     std::cout << "Lengths: " << verts.size() << ", " << uvs.size() << ", " << indices.size() << "\n";
 
+    RecalculateNormals();
     UpdateBuffers();
 }
 

@@ -105,8 +105,8 @@ void Engine::StartGameLoop(const std::string path) {
         EditorLoop(m_deltaTime);
 
         // bottom right
-        ImGui::SetNextWindowPos(ImVec2(m_WindowWidth - 300, 0));
-        ImGui::SetNextWindowSize(ImVec2(300, 150));
+        ImGui::SetNextWindowPos(ImVec2(m_WindowWidth - 300, 20));
+        ImGui::SetNextWindowSize(ImVec2(300, 200));
 
         float predictedFps = 1.0f / total_time_to_render;
 
@@ -125,13 +125,43 @@ void Engine::StartGameLoop(const std::string path) {
 
         // plot FPS as a graph
         float fpsHistory[100];
+        float maxFPS = 0;
         for (int i = 0; i < 100; i++) {
             if (i < m_FPSGraph.size()) {
                 fpsHistory[i] = m_FPSGraph[i];
+                maxFPS = glm::max(maxFPS, m_FPSGraph[i]);
             }
         }
 
-        ImGui::PlotLines("FPS", fpsHistory, 100);
+        //ImGui::PlotHistogram("FPS", fpsHistory, 100);
+
+        ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+        ImVec2 plotPos = ImGui::GetCursorScreenPos();
+        ImVec2 plotSize = ImGui::GetContentRegionAvail();
+        float xScale = plotSize.x / 100;
+        float yScale = plotSize.y / 100;
+
+        for (int i = 1; i < 100; i++) {
+            // Calculate the line start and end positions
+            ImVec2 rectPos = ImVec2(plotPos.x + i * xScale, plotPos.y + (1 - fpsHistory[i] / maxFPS) * yScale);
+            ImVec2 rectSize = ImVec2(xScale, (fpsHistory[i] / maxFPS) * yScale);
+
+            // Choose the line color based on the FPS value
+            ImU32 lineColor;
+            if (fpsHistory[i] < 30) {
+                lineColor = IM_COL32(255, 0, 0, 255); // Red
+            }
+            else if (fpsHistory[i] < 60) {
+                lineColor = IM_COL32(255, 255, 0, 255); // Yellow
+            }
+            else {
+                lineColor = IM_COL32(0, 255, 0, 255); // Green
+            }
+
+            // Draw the line
+            drawList->AddRectFilled(rectPos, ImVec2(rectPos.x + rectSize.x, rectPos.y + rectSize.y), lineColor);
+        }
 
         ImGui::End();
 
@@ -254,11 +284,30 @@ void Engine::Render() {
 }
 
 void Engine::DrawEditor() {
+    if (ImGuiFileDialog::Instance()->Display("ChooseFBX")) {
+        if (ImGuiFileDialog::Instance()->IsOk()) {
+            std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+            std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
+
+            std::string modelName = filePathName.substr(filePathName.find_last_of("/\\") + 1);
+
+            Entity* ent = new Entity(GetValidName(modelName));
+            Mesh* mesh = ent->AddComponent<Mesh>();
+            mesh->LoadFromFile(filePathName);
+
+            m_Entities.push_back(ent);
+        }
+
+        ImGuiFileDialog::Instance()->Close();
+    }
     // create top toolbar
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("File")) {
             if (ImGui::MenuItem("New Scene")) {
 
+            }
+            if (ImGui::MenuItem("Open FBX")) {
+                ImGuiFileDialog::Instance()->OpenDialog("ChooseFBX", "Choose FBX", ".fbx", ".", 1, nullptr, ImGuiFileDialogFlags_Modal);
             }
 
             ImGui::EndMenu();
@@ -343,8 +392,8 @@ void Engine::DrawEditor() {
     ImGui::End();
 
     // inspector
-    ImGui::SetNextWindowPos(ImVec2(m_WindowWidth - 500, 150));
-    ImGui::SetNextWindowSize(ImVec2(500, m_WindowHeight-150));
+    ImGui::SetNextWindowPos(ImVec2(m_WindowWidth - 500, 200));
+    ImGui::SetNextWindowSize(ImVec2(500, m_WindowHeight-200));
 
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
     ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
