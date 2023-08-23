@@ -59,7 +59,10 @@ Engine::Engine(int width, int height) {
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
+
     ImGuiIO& io = ImGui::GetIO(); (void)io;
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
     ImGui::StyleColorsDark();
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330");
@@ -341,37 +344,43 @@ void Engine::DrawEditor() {
         }
 
         if (ImGui::BeginMenu("Entity Creator")) {
-            if (ImGui::MenuItem("Create Plane (1x1)")) {
-                Entity* ent = new Entity(GetValidName("Plane"));
+            if (ImGui::BeginMenu("Create 3D Object")) {
+                if (ImGui::MenuItem("Plane (1x1)")) {
+                    Entity* ent = new Entity(GetValidName("Plane"));
 
-                Mesh* mesh = ent->AddComponent<Mesh>();
-                mesh->CreatePlane(glm::vec2(1.0f, 1.0f));
+                    Mesh* mesh = ent->AddComponent<Mesh>();
+                    mesh->CreatePlane(glm::vec2(1.0f, 1.0f));
 
-                m_Entities.push_back(ent);
+                    m_Entities.push_back(ent);
+                }
+                if (ImGui::MenuItem("Cube (1x1)")) {
+                    Entity* ent = new Entity(GetValidName("Cube"));
+
+                    Mesh* mesh = ent->AddComponent<Mesh>();
+                    mesh->CreateCube(glm::vec3(1.0f, 1.0f, 1.0f));
+
+                    m_Entities.push_back(ent);
+                }
+                if (ImGui::MenuItem("Sphere (1x1)")) {
+                    Entity* ent = new Entity(GetValidName("Sphere"));
+
+                    Mesh* mesh = ent->AddComponent<Mesh>();
+                    mesh->CreateSphere(1.0f, 16, 16);
+
+                    m_Entities.push_back(ent);
+                }
+                ImGui::EndMenu();
             }
-            if (ImGui::MenuItem("Create Cube (1x1)")) {
-				Entity* ent = new Entity(GetValidName("Cube"));
+            if (ImGui::BeginMenu("Create Lights")) {
+                if (ImGui::MenuItem("Light")) {
+                    Entity* ent = new Entity(GetValidName("Light"));
 
-				Mesh* mesh = ent->AddComponent<Mesh>();
-				mesh->CreateCube(glm::vec3(1.0f, 1.0f, 1.0f));
+                    Light* light = ent->AddComponent<Light>();
 
-				m_Entities.push_back(ent);
-			}
-            if (ImGui::MenuItem("Create Sphere (1x1)")) {
-                Entity* ent = new Entity(GetValidName("Sphere"));
-
-                Mesh* mesh = ent->AddComponent<Mesh>();
-                mesh->CreateSphere(1.0f, 16, 16);
-
-                m_Entities.push_back(ent);
+                    m_Entities.push_back(ent);
+                }
+                ImGui::EndMenu();
             }
-            if (ImGui::MenuItem("Create Light")) {
-				Entity* ent = new Entity(GetValidName("Light"));
-
-				Light* light = ent->AddComponent<Light>();
-
-				m_Entities.push_back(ent);
-			}
             ImGui::EndMenu();
         }
 
@@ -386,9 +395,7 @@ void Engine::DrawEditor() {
         }
     }
 
-    // hierarchy
-    //ImGui::SetNextWindowPos(ImVec2(0, 50));
-    //ImGui::SetNextWindowSize(ImVec2(300, m_WindowHeight-50));
+    ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode, nullptr);
 
     ImGui::Begin("Hierarchy");
 
@@ -425,14 +432,11 @@ void Engine::DrawEditor() {
 
     ImGui::End();
 
-    // inspector
-    //ImGui::SetNextWindowPos(ImVec2(m_WindowWidth - 500, 200));
-    //ImGui::SetNextWindowSize(ImVec2(500, m_WindowHeight-200));
-
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
     ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
 
     ImGui::Begin("Inspector", NULL, ImGuiWindowFlags_NoResize);
+
     if (m_SelectedEntity != nullptr) {
         ImGui::Text(m_SelectedEntity->m_Name.c_str());
 
@@ -471,10 +475,6 @@ void Engine::DrawEditor() {
     ImGui::End();
 
     ImGui::PopStyleColor(2);
-
-    // file system
-    //ImGui::SetNextWindowPos(ImVec2(0, m_WindowHeight-200));
-    //ImGui::SetNextWindowSize(ImVec2(m_WindowWidth, 200));
 
     ImGui::Begin("File System");
 

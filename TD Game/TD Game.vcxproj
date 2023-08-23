@@ -156,8 +156,6 @@
     <ClCompile Include="imgui\imgui_demo.cpp" />
     <ClCompile Include="imgui\imgui_draw.cpp" />
     <ClCompile Include="imgui\imgui_impl_glfw.cpp" />
-    <ClCompile Include="imgui\imgui_impl_glut.cpp" />
-    <ClCompile Include="imgui\imgui_impl_opengl2.cpp" />
     <ClCompile Include="imgui\imgui_impl_opengl3.cpp" />
     <ClCompile Include="imgui\imgui_impl_win32.cpp" />
     <ClCompile Include="imgui\imgui_tables.cpp" />
@@ -498,13 +496,12 @@
     <ClInclude Include="Dependencies\gizmos\ImZoomSlider.h" />
     <ClInclude Include="Dependencies\OpenFBX\miniz.h" />
     <ClInclude Include="Dependencies\OpenFBX\ofbx.h" />
+    <ClInclude Include="imgui\filedialog\dirent\dirent.h" />
     <ClInclude Include="imgui\filedialog\ImGuiFileDialog.h" />
     <ClInclude Include="imgui\filedialog\ImGuiFileDialogConfig.h" />
     <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />
     <ClInclude Include="imgui\imgui_impl_glfw.h" />
-    <ClInclude Include="imgui\imgui_impl_glut.h" />
-    <ClInclude Include="imgui\imgui_impl_opengl2.h" />
     <ClInclude Include="imgui\imgui_impl_opengl3.h" />
     <ClInclude Include="imgui\imgui_impl_opengl3_loader.h" />
     <ClInclude Include="imgui\imgui_impl_win32.h" />
