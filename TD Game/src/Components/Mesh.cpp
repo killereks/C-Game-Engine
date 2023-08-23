@@ -2,6 +2,8 @@
 // Created by killereks on 21/08/2023.
 //
 
+#pragma once
+
 #include <GL/glew.h>
 #include "Mesh.h"
 #include "geometric.hpp"
@@ -10,6 +12,7 @@
 #include <iostream>
 #include "Entity.h"
 //#include "ofbx.h"
+#include "imgui.h"
 
 void Mesh::Update(float dt) {
 
@@ -244,4 +247,14 @@ void Mesh::Draw() {
     }
     
     glDrawElements(GL_TRIANGLES, m_Indices.size(), GL_UNSIGNED_INT, nullptr);
+}
+
+std::string Mesh::GetName() {
+	return "Mesh";
+}
+
+void Mesh::DrawInspector() {
+    ImGui::Text("Vertices: %d", m_Vertices.size());
+    ImGui::Text("UVs: %d", m_UVs.size());
+    ImGui::Text("Indices: %d", m_Indices.size());
 }

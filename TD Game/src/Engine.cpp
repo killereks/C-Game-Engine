@@ -1,12 +1,11 @@
+#pragma once
+
 #include "Components/Entity.h"
 #include "Components/Component.h"
 #include "Engine.h"
 #include "Shader.h"
 #include "Camera.h"
 
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
 #include "Tools.h"
 
 #include <string>
@@ -14,6 +13,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <Mesh.h>
+#include <ext.hpp>
 
 Engine::Engine(int width, int height) {
     GLFWwindow* window;
@@ -87,6 +87,7 @@ void Engine::StartGameLoop(const std::string path) {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
+        ImGuizmo::BeginFrame();
 
         glfwPollEvents();
 
@@ -100,6 +101,8 @@ void Engine::StartGameLoop(const std::string path) {
         double render_time = glfwGetTime();
         Render();
         double total_time_to_render = glfwGetTime() - render_time;
+
+        EditorLoop(m_deltaTime);
 
         // bottom right
         ImGui::SetNextWindowPos(ImVec2(m_WindowWidth - 300, 0));
@@ -319,54 +322,51 @@ void Engine::DrawEditor() {
     ImGui::End();
 
     // inspector
-    ImGui::SetNextWindowPos(ImVec2(m_WindowWidth - 500, 50));
-    ImGui::SetNextWindowSize(ImVec2(500, m_WindowHeight-50));
+    ImGui::SetNextWindowPos(ImVec2(m_WindowWidth - 500, 150));
+    ImGui::SetNextWindowSize(ImVec2(500, m_WindowHeight-150));
+
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
 
     ImGui::Begin("Inspector", NULL, ImGuiWindowFlags_NoResize);
     if (m_SelectedEntity != nullptr) {
         ImGui::Text(m_SelectedEntity->Name().c_str());
 
-        ImGui::BeginChild("Transform", ImVec2(0, 0), true);
+        if (ImGui::CollapsingHeader("Transform")) {
+            ImGui::BeginGroup();
+            // position
+            ImGui::PushID("Position");
+            ImGui::Text("Position");
+            ImGui::InputFloat3("##Position", &m_SelectedEntity->m_Transform.m_Position.x);
+            ImGui::PopID();
 
-        ImGui::Columns(4, "TransformColumns");
-        // position
-        ImGui::PushID("Position");
-        ImGui::Text("Position");
-        ImGui::NextColumn();
-        ImGui::InputFloat("X", &m_SelectedEntity->m_Transform.m_Position.x, 0.0f, 0.0f, "%.3f");
-        ImGui::NextColumn();
-        ImGui::InputFloat("Y", &m_SelectedEntity->m_Transform.m_Position.y, 0.0f, 0.0f, "%.3f");
-        ImGui::NextColumn();
-        ImGui::InputFloat("Z", &m_SelectedEntity->m_Transform.m_Position.z, 0.0f, 0.0f, "%.3f");
-        ImGui::NextColumn();
-        ImGui::PopID();
+            // rotation
+            ImGui::PushID("Rotation");
+            ImGui::Text("Rotation");
+            ImGui::InputFloat4("##Rotation", &m_SelectedEntity->m_Transform.m_Rotation.x);
+            ImGui::PopID();
 
-        // rotation
-        ImGui::PushID("Rotation");
-        ImGui::Text("Rotation");
-        ImGui::NextColumn();
-        ImGui::InputFloat("X", &m_SelectedEntity->m_Transform.m_Rotation.x, 0.0f, 0.0f, "%.3f");
-        ImGui::NextColumn();
-        ImGui::InputFloat("Y", &m_SelectedEntity->m_Transform.m_Rotation.y, 0.0f, 0.0f, "%.3f");
-        ImGui::NextColumn();
-        ImGui::InputFloat("Z", &m_SelectedEntity->m_Transform.m_Rotation.z, 0.0f, 0.0f, "%.3f");
-        ImGui::NextColumn();
-        ImGui::PopID();
+            // scale
+            ImGui::PushID("Scale");
+            ImGui::Text("Scale");
+            ImGui::InputFloat3("##Scale", &m_SelectedEntity->m_Transform.m_Scale.x);
+            ImGui::PopID();
 
-        // scale
-        ImGui::PushID("Scale");
-        ImGui::Text("Scale");
-        ImGui::NextColumn();
-        ImGui::InputFloat("X", &m_SelectedEntity->m_Transform.m_Scale.x, 0.0f, 0.0f, "%.3f");
-        ImGui::NextColumn();
-        ImGui::InputFloat("Y", &m_SelectedEntity->m_Transform.m_Scale.y, 0.0f, 0.0f, "%.3f");
-        ImGui::NextColumn();
-        ImGui::InputFloat("Z", &m_SelectedEntity->m_Transform.m_Scale.z, 0.0f, 0.0f, "%.3f");
-        ImGui::PopID();
+            ImGui::EndGroup();
+        }
 
-        ImGui::EndChild();
+        // display components
+        ImGui::BeginGroup();
+        for (Component* component : m_SelectedEntity->m_Components) {
+            if (ImGui::CollapsingHeader(component->GetName().c_str())) {
+                component->DrawInspector();
+            }
+		}
+        ImGui::EndGroup();
     }
     ImGui::End();
+
+    ImGui::PopStyleColor(2);
 }
 
 std::string Engine::GetValidName(std::string name) {
@@ -377,4 +377,46 @@ std::string Engine::GetValidName(std::string name) {
     }
 
     return name;
+}
+
+void Engine::EditorLoop(float dt) {
+    if (m_SelectedEntity != nullptr) {
+        EditTransform(m_SelectedEntity);
+    }
+}
+
+void Engine::EditTransform(Entity* ent) {
+    // W = Translation
+    // E = Rotation
+    // R = Scale
+
+    ImGuiIO& io = ImGui::GetIO();
+    ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
+
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+		m_CurrentOperation = ImGuizmo::TRANSLATE;
+	}
+    else if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
+        m_CurrentOperation = ImGuizmo::ROTATE;
+	}
+    else if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
+        m_CurrentOperation = ImGuizmo::SCALE;
+	}
+
+    glm::mat4 viewMatrix = m_MainCamera->GetViewMatrix();
+    glm::mat4 projectionMatrix = m_MainCamera->GetProjectionMatrix();
+    glm::mat4 matrix = ent->m_Transform.GetModelMatrix();
+
+    float* matrixPtr = glm::value_ptr(matrix);
+    float* viewMatrixPtr = glm::value_ptr(viewMatrix);
+    float* projectionMatrixPtr = glm::value_ptr(projectionMatrix);
+
+    ImGuizmo::Manipulate(viewMatrixPtr, projectionMatrixPtr, m_CurrentOperation, ImGuizmo::WORLD, matrixPtr);
+
+    glm::vec3 translation, rotation, scale;
+    ImGuizmo::DecomposeMatrixToComponents(matrixPtr, &translation.x, &rotation.x, &scale.x);
+
+    ent->m_Transform.m_Position = translation;
+    ent->m_Transform.SetRotationEuler(rotation);
+    ent->m_Transform.m_Scale = scale;
 }

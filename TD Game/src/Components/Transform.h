@@ -8,7 +8,7 @@
 #include "vec3.hpp"
 #include "ext/quaternion_float.hpp"
 
-class Transform : public Component {
+class Transform {
 public:
     glm::vec3 m_Position = glm::vec3(0.0f);
     glm::quat m_Rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
@@ -22,8 +22,8 @@ public:
 
     void Translate(glm::vec3 translation);
 
-    void Update(float dt) override;
-    void Init() override;
+    std::string GetName();
+    void DrawInspector();
 
     void SetRotationEuler(glm::vec3 euler);
     glm::vec3 GetEuler();

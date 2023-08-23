@@ -144,6 +144,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Dependencies\glm\detail\glm.cpp" />
+    <ClCompile Include="Dependencies\gizmos\GraphEditor.cpp" />
+    <ClCompile Include="Dependencies\gizmos\ImCurveEdit.cpp" />
+    <ClCompile Include="Dependencies\gizmos\ImGradient.cpp" />
+    <ClCompile Include="Dependencies\gizmos\ImGuizmo.cpp" />
+    <ClCompile Include="Dependencies\gizmos\ImSequencer.cpp" />
     <ClCompile Include="imgui\imgui.cpp" />
     <ClCompile Include="imgui\imgui_demo.cpp" />
     <ClCompile Include="imgui\imgui_draw.cpp" />
@@ -462,6 +467,12 @@
     <ClInclude Include="Dependencies\GL\freeglut_std.h" />
     <ClInclude Include="Dependencies\GL\freeglut_ucall.h" />
     <ClInclude Include="Dependencies\GL\glut.h" />
+    <ClInclude Include="Dependencies\gizmos\GraphEditor.h" />
+    <ClInclude Include="Dependencies\gizmos\ImCurveEdit.h" />
+    <ClInclude Include="Dependencies\gizmos\ImGradient.h" />
+    <ClInclude Include="Dependencies\gizmos\ImGuizmo.h" />
+    <ClInclude Include="Dependencies\gizmos\ImSequencer.h" />
+    <ClInclude Include="Dependencies\gizmos\ImZoomSlider.h" />
     <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />
     <ClInclude Include="imgui\imgui_impl_glfw.h" />

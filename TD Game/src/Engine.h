@@ -1,3 +1,5 @@
+#pragma once
+
 #include <iostream>
 #include <vector>
 
@@ -5,8 +7,13 @@
 #include "Components/Entity.h"
 #include "Camera.h"
 
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <gizmos/ImGuizmo.h>
 
 class Engine {
 public:
@@ -17,6 +24,7 @@ public:
 
     void Awake();
     void Update(float m_DeltaTime);
+    void EditorLoop(float m_DeltaTime);
     void Render();
 
     void StartGameLoop(std::string path);
@@ -40,6 +48,10 @@ private:
 
     Entity* m_SelectedEntity;
 
+    ImGuizmo::OPERATION m_CurrentOperation;
+
     void DrawEditor();
     std::string GetValidName(std::string name);
+
+    void EditTransform(Entity* entity);
 };

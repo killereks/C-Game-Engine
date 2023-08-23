@@ -41,6 +41,9 @@ class Mesh : public Component {
     void Init() override;
     void Update(float dt) override;
 
+    std::string GetName() override;
+    void DrawInspector() override;
+
     void Render(Camera* camera, Shader* shader);
 
     void RecalculateNormals();
