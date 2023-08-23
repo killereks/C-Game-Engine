@@ -1,11 +1,8 @@
 ﻿  Engine.cpp
-C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(116,54): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(119,28): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(138,19): warning C4018: '<': signed/unsigned mismatch
-C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(225,36): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
-C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(226,36): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
-C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(290,23): warning C4018: '<': signed/unsigned mismatch
-C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(388,56): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(426,50): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(427,56): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(119,54): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(122,28): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(141,19): warning C4018: '<': signed/unsigned mismatch
+C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(228,36): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
+C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(229,36): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
+C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(293,23): warning C4018: '<': signed/unsigned mismatch
   TD Game.vcxproj -> C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\Debug\TD Game.exe

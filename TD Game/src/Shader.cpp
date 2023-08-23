@@ -130,9 +130,6 @@ unsigned int Shader::CompileShader(unsigned int type, const std::string& source)
 unsigned int Shader::CreateShader(const std::string& vertexShader, const std::string& fragmentShader) {
     std::cout << "Creating shader..." << std::endl;
 
-    std::cout << "Vertex: " << vertexShader << std::endl;
-    std::cout << "Fragment: " << fragmentShader << std::endl;
-
 	unsigned int program = glCreateProgram();
 	unsigned int vs = CompileShader(GL_VERTEX_SHADER, vertexShader);
 	unsigned int fs = CompileShader(GL_FRAGMENT_SHADER, fragmentShader);

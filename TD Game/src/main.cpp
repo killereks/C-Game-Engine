@@ -8,6 +8,10 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include <Windows.h>
+#include <ShlObj.h>
+#include <filesystem>
+
 void SetupImGUIStyle(){
     ImGuiStyle* style = &ImGui::GetStyle();
 
@@ -69,15 +73,35 @@ void SetupImGUIStyle(){
     //style->Colors[ImGuiCol_ModalWindowDarkening] = ImVec4(1.00f, 0.98f, 0.95f, 0.73f);
 }
 
+void CreateFolderIfMissing(std::string path) {
+    std::error_code ec;
+    if (!std::filesystem::create_directory(path, ec) && ec) {
+        std::cerr << "Failed to create directory: " << path << std::endl;
+    }
+}
+
 int main(int argc, char** argv){
     Engine engine(1080, 720);
 
     std::string cwd = argv[0];
     std::string pathWithoutExe = cwd.substr(0, cwd.find_last_of("\\/"));
 
+    std::string kPersistentPath = "";
+
+    char out[MAX_PATH];
+    if (SHGetSpecialFolderPathA(NULL, out, CSIDL_APPDATA, 0)) {
+        kPersistentPath = std::string(out)+"\\GameEngine";
+        std::cout << "Persistent path: " << kPersistentPath << std::endl;
+
+        CreateFolderIfMissing(kPersistentPath);
+    }
+    else {
+        std::cerr << "Failed to get persistent path" << std::endl;
+    }
+
     SetupImGUIStyle();
 
-    engine.StartGameLoop(pathWithoutExe);
+    engine.StartGameLoop(pathWithoutExe, kPersistentPath);
 
     return 0;
 }

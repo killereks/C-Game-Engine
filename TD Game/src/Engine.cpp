@@ -15,6 +15,7 @@
 #include <Mesh.h>
 #include <ext.hpp>
 #include <Light.h>
+#include <filesystem>
 
 Engine::Engine(int width, int height) {
     GLFWwindow* window;
@@ -64,8 +65,10 @@ Engine::Engine(int width, int height) {
     ImGui_ImplOpenGL3_Init("#version 330");
 }
 
-void Engine::StartGameLoop(const std::string path) {
+void Engine::StartGameLoop(const std::string path, const std::string projectPath) {
     std::string shaderPath = path + "/shaders/default/";
+
+    m_ProjectPath = projectPath;
 
     std::cout << "Starting Game Loop..." << std::endl;
     std::cout << "Loading Shaders... at " << shaderPath << std::endl;
@@ -384,8 +387,8 @@ void Engine::DrawEditor() {
     }
 
     // hierarchy
-    ImGui::SetNextWindowPos(ImVec2(0, 50));
-    ImGui::SetNextWindowSize(ImVec2(300, m_WindowHeight-50));
+    //ImGui::SetNextWindowPos(ImVec2(0, 50));
+    //ImGui::SetNextWindowSize(ImVec2(300, m_WindowHeight-50));
 
     ImGui::Begin("Hierarchy");
 
@@ -423,8 +426,8 @@ void Engine::DrawEditor() {
     ImGui::End();
 
     // inspector
-    ImGui::SetNextWindowPos(ImVec2(m_WindowWidth - 500, 200));
-    ImGui::SetNextWindowSize(ImVec2(500, m_WindowHeight-200));
+    //ImGui::SetNextWindowPos(ImVec2(m_WindowWidth - 500, 200));
+    //ImGui::SetNextWindowSize(ImVec2(500, m_WindowHeight-200));
 
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
     ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
@@ -468,6 +471,31 @@ void Engine::DrawEditor() {
     ImGui::End();
 
     ImGui::PopStyleColor(2);
+
+    // file system
+    //ImGui::SetNextWindowPos(ImVec2(0, m_WindowHeight-200));
+    //ImGui::SetNextWindowSize(ImVec2(m_WindowWidth, 200));
+
+    ImGui::Begin("File System");
+
+    ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.5f));
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
+
+    for (auto& p : std::filesystem::directory_iterator(m_ProjectPath)) {
+        if (p.is_directory()) {
+            std::string name = p.path().filename().string();
+            if (ImGui::Button(name.c_str(), ImVec2(-FLT_MIN, 0))) {
+				std::cout << name << std::endl;
+			}
+		}
+	}
+
+    ImGui::PopStyleVar();
+	ImGui::PopStyleVar();
+
+	ImGui::End();
+
+	ImGui::Render();
 }
 
 std::string Engine::GetValidName(std::string name) {

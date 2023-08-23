@@ -29,7 +29,7 @@ public:
     void EditorLoop(float m_DeltaTime);
     void Render();
 
-    void StartGameLoop(std::string path);
+    void StartGameLoop(std::string path, std::string projectPath);
 
 private:
     int m_WindowWidth;
@@ -56,4 +56,6 @@ private:
     std::string GetValidName(std::string name);
 
     void EditTransform(Entity* entity);
+
+    std::string m_ProjectPath;
 };
