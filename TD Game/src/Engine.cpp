@@ -65,10 +65,17 @@ Engine::Engine(int width, int height) {
 }
 
 void Engine::StartGameLoop(const std::string path) {
+    std::string shaderPath = path + "/shaders/default/";
+
     std::cout << "Starting Game Loop..." << std::endl;
-    std::cout << "Loading Shaders... at " << path << std::endl;
+    std::cout << "Loading Shaders... at " << shaderPath << std::endl;
 
     std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
+
+    Shader* shader = new Shader();
+    shader->LoadFromFiles(shaderPath +"/vertex.glsl", shaderPath+"/fragment.glsl");
+
+    _defaultShader = shader;
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) {
@@ -257,12 +264,6 @@ void Engine::Awake() {
             component->Init();
         }
     }
-
-    const std::string prefix = "C:/Users/ssnee/Desktop/CPP-Game-Engine/TD Game";
-    Shader* shader = new Shader();
-    shader->LoadFromFiles(prefix + "/src/shaders/default/vertex.glsl", prefix + "/src/shaders/default/fragment.glsl");
-
-    _defaultShader = shader;
 }
 
 void Engine::Update(float m_DeltaTime) {

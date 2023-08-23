@@ -73,10 +73,11 @@ int main(int argc, char** argv){
     Engine engine(1080, 720);
 
     std::string cwd = argv[0];
+    std::string pathWithoutExe = cwd.substr(0, cwd.find_last_of("\\/"));
 
     SetupImGUIStyle();
 
-    engine.StartGameLoop(cwd);
+    engine.StartGameLoop(pathWithoutExe);
 
     return 0;
 }
