@@ -102,15 +102,34 @@ void Engine::StartGameLoop(const std::string path) {
         double total_time_to_render = glfwGetTime() - render_time;
 
         // bottom right
-        ImGui::SetNextWindowPos(ImVec2(m_WindowWidth - 300, m_WindowHeight - 100));
-        ImGui::SetNextWindowSize(ImVec2(300, 100));
+        ImGui::SetNextWindowPos(ImVec2(m_WindowWidth - 300, 0));
+        ImGui::SetNextWindowSize(ImVec2(300, 150));
+
+        float predictedFps = 1.0f / total_time_to_render;
 
         // disable resize
         ImGui::Begin("Frame Data", NULL, ImGuiWindowFlags_NoResize);
         ImGui::Text("Frame Time: %fms", m_deltaTime * 1000.0f);
         ImGui::Text("Total Update Time: %fms", total_time_to_update * 1000.0f);
         ImGui::Text("Total Render Time: %fms", total_time_to_render * 1000.0f);
-        ImGui::Text("Predicted FPS: %f", 1.0f / total_time_to_render);
+        ImGui::Text("Predicted FPS: %f", predictedFps);
+
+        m_FPSGraph.push_back(predictedFps);
+
+        if (m_FPSGraph.size() > 100) {
+            m_FPSGraph.erase(m_FPSGraph.begin());
+        }
+
+        // plot FPS as a graph
+        float fpsHistory[100];
+        for (int i = 0; i < 100; i++) {
+            if (i < m_FPSGraph.size()) {
+                fpsHistory[i] = m_FPSGraph[i];
+            }
+        }
+
+        ImGui::PlotLines("FPS", fpsHistory, 100);
+
         ImGui::End();
 
         DrawEditor();
@@ -232,39 +251,67 @@ void Engine::Render() {
 }
 
 void Engine::DrawEditor() {
-    // hierarchy
-    ImGui::SetNextWindowPos(ImVec2(0, 0));
-    ImGui::SetNextWindowSize(ImVec2(300, m_WindowHeight));
+    // create top toolbar
+    if (ImGui::BeginMainMenuBar()) {
+        if (ImGui::BeginMenu("File")) {
+            if (ImGui::MenuItem("New Scene")) {
 
-    ImGui::Begin("Create Objects", NULL, ImGuiWindowFlags_NoResize);
-    if (ImGui::Button("Create Plane")){
-        Entity* ent = new Entity("Plane");
+            }
+        }
 
-        Mesh* mesh = ent->AddComponent<Mesh>();
-        mesh->CreatePlane(glm::vec2(100.0f, 100.0f));
+        if (ImGui::BeginMenu("Entity Creator")) {
+            if (ImGui::MenuItem("Create Plane (1x1)")) {
+                Entity* ent = new Entity(GetValidName("Plane"));
 
-        m_Entities.push_back(ent);
+                Mesh* mesh = ent->AddComponent<Mesh>();
+                mesh->CreatePlane(glm::vec2(1.0f, 1.0f));
+
+                m_Entities.push_back(ent);
+            }
+            if (ImGui::MenuItem("Create Cube (1x1)")) {
+				Entity* ent = new Entity(GetValidName("Cube"));
+
+				Mesh* mesh = ent->AddComponent<Mesh>();
+				mesh->CreateCube(glm::vec3(1.0f, 1.0f, 1.0f));
+
+				m_Entities.push_back(ent);
+			}
+        }
     }
-    if (ImGui::Button("Create Cube")) {
-		Entity* ent = new Entity("Cube");
 
-        Mesh* mesh = ent->AddComponent<Mesh>();
-        mesh->CreateCube(glm::vec3(1.0f, 1.0f, 1.0f));
+    // hierarchy
+    ImGui::SetNextWindowPos(ImVec2(0, 50));
+    ImGui::SetNextWindowSize(ImVec2(300, m_WindowHeight-50));
 
-		m_Entities.push_back(ent);
-	}
+    ImGui::Begin("Hierarchy");
 
     ImGui::BeginChild("Hierarchy", ImVec2(0, 0), true);
 
     ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.5f));
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
+
+    int index = 0;
 
     for (Entity* entity : m_Entities) {
-        if (ImGui::Button(entity->Name().c_str(), ImVec2(-FLT_MIN, 0))) {
+        if (m_SelectedEntity == entity) {
+			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
+		}
+        else {
+			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+		}
 
+        if (ImGui::Button(entity->Name().c_str(), ImVec2(-FLT_MIN, 0))) {
+            m_SelectedEntity = entity;
+
+            std::cout << "Selected Entity: " << m_SelectedEntity->Name() << index << std::endl;
         }
-        //ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), entity->Name().c_str());
+
+        index++;
+
+        ImGui::PopStyleColor();
     }
 
+    ImGui::PopStyleVar();
     ImGui::PopStyleVar();
 
     ImGui::EndChild();
@@ -272,18 +319,62 @@ void Engine::DrawEditor() {
     ImGui::End();
 
     // inspector
-    ImGui::SetNextWindowPos(ImVec2(m_WindowWidth - 300, 0));
-    ImGui::SetNextWindowSize(ImVec2(300, m_WindowHeight));
+    ImGui::SetNextWindowPos(ImVec2(m_WindowWidth - 500, 50));
+    ImGui::SetNextWindowSize(ImVec2(500, m_WindowHeight-50));
 
     ImGui::Begin("Inspector", NULL, ImGuiWindowFlags_NoResize);
-    ImGui::Text("Inspector");
-    ImGui::End();
+    if (m_SelectedEntity != nullptr) {
+        ImGui::Text(m_SelectedEntity->Name().c_str());
 
-    // project files
-    ImGui::SetNextWindowPos(ImVec2(300, m_WindowHeight - 150));
-    ImGui::SetNextWindowSize(ImVec2(m_WindowWidth - 600, 150));
+        ImGui::BeginChild("Transform", ImVec2(0, 0), true);
 
-    ImGui::Begin("Project Files", NULL, ImGuiWindowFlags_NoResize);
-    ImGui::Text("Project Files");
+        ImGui::Columns(4, "TransformColumns");
+        // position
+        ImGui::PushID("Position");
+        ImGui::Text("Position");
+        ImGui::NextColumn();
+        ImGui::InputFloat("X", &m_SelectedEntity->m_Transform.m_Position.x, 0.0f, 0.0f, "%.3f");
+        ImGui::NextColumn();
+        ImGui::InputFloat("Y", &m_SelectedEntity->m_Transform.m_Position.y, 0.0f, 0.0f, "%.3f");
+        ImGui::NextColumn();
+        ImGui::InputFloat("Z", &m_SelectedEntity->m_Transform.m_Position.z, 0.0f, 0.0f, "%.3f");
+        ImGui::NextColumn();
+        ImGui::PopID();
+
+        // rotation
+        ImGui::PushID("Rotation");
+        ImGui::Text("Rotation");
+        ImGui::NextColumn();
+        ImGui::InputFloat("X", &m_SelectedEntity->m_Transform.m_Rotation.x, 0.0f, 0.0f, "%.3f");
+        ImGui::NextColumn();
+        ImGui::InputFloat("Y", &m_SelectedEntity->m_Transform.m_Rotation.y, 0.0f, 0.0f, "%.3f");
+        ImGui::NextColumn();
+        ImGui::InputFloat("Z", &m_SelectedEntity->m_Transform.m_Rotation.z, 0.0f, 0.0f, "%.3f");
+        ImGui::NextColumn();
+        ImGui::PopID();
+
+        // scale
+        ImGui::PushID("Scale");
+        ImGui::Text("Scale");
+        ImGui::NextColumn();
+        ImGui::InputFloat("X", &m_SelectedEntity->m_Transform.m_Scale.x, 0.0f, 0.0f, "%.3f");
+        ImGui::NextColumn();
+        ImGui::InputFloat("Y", &m_SelectedEntity->m_Transform.m_Scale.y, 0.0f, 0.0f, "%.3f");
+        ImGui::NextColumn();
+        ImGui::InputFloat("Z", &m_SelectedEntity->m_Transform.m_Scale.z, 0.0f, 0.0f, "%.3f");
+        ImGui::PopID();
+
+        ImGui::EndChild();
+    }
     ImGui::End();
+}
+
+std::string Engine::GetValidName(std::string name) {
+    for (Entity* ent : m_Entities) {
+        if (ent->Name() == name) {
+            return GetValidName(name + " (1)");
+        }
+    }
+
+    return name;
 }

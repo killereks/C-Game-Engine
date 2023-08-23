@@ -34,7 +34,12 @@ private:
 
     Shader* _defaultShader;
 
+    std::vector<float> m_FPSGraph;
+
     std::vector<Entity*> m_Entities;
 
+    Entity* m_SelectedEntity;
+
     void DrawEditor();
+    std::string GetValidName(std::string name);
 };
