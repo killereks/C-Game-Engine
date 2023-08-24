@@ -16,5 +16,6 @@ class Light : public Component {
 
 	std::string GetName() override;
 	void DrawInspector() override;
+	void DrawGizmos() override;
 };
 

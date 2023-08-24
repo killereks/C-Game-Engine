@@ -58,4 +58,6 @@ private:
     void EditTransform(Entity* entity);
 
     std::string m_ProjectPath;
+
+    bool leftClicked = false;
 };

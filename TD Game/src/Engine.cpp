@@ -5,6 +5,9 @@
 #include "Engine.h"
 #include "Shader.h"
 #include "Camera.h"
+#include "Physics.h"
+#include "Ray.h"
+#include "Bounds.h"
 
 #include "Tools.h"
 
@@ -188,6 +191,35 @@ void Engine::StartGameLoop(const std::string path, const std::string projectPath
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
 
+        if (!ImGuizmo::IsOver() && !ImGui::GetIO().WantCaptureMouse) {
+            int leftClick = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+
+            if (leftClick == GLFW_RELEASE) {
+                leftClicked = false;
+            }
+
+            if (leftClick == GLFW_PRESS && !leftClicked) {
+                // raycast
+                float mouseX = (float)mousePosX;
+                float mouseY = (float)mousePosY;
+
+                leftClicked = true;
+
+                Ray ray = m_MainCamera->ScreenPointToRay(glm::vec2(mouseX, mouseY), glm::vec2(m_WindowWidth, m_WindowHeight));
+
+                for (auto& ent : m_Entities) {
+                    Mesh* mesh = nullptr;
+                    if (ent->TryGetComponent(mesh)) {
+                        if (Physics::RayCollisionAABB(ray, mesh->GetBounds())) {
+                            m_SelectedEntity = ent;
+                            std::cout << "Selected Entity: " << ent->m_Name << std::endl;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
         int rightClick = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
 
         if (rightClick == GLFW_RELEASE){
@@ -238,6 +270,17 @@ void Engine::StartGameLoop(const std::string path, const std::string projectPath
                 cameraX = -89.0f;
 
             m_MainCamera->m_Transform.SetRotationEuler(glm::vec3(cameraX, cameraY, 0.0f));
+        }
+        else {
+            if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+                m_CurrentOperation = ImGuizmo::TRANSLATE;
+            }
+            else if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
+                m_CurrentOperation = ImGuizmo::ROTATE;
+            }
+            else if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
+                m_CurrentOperation = ImGuizmo::SCALE;
+            }
         }
 
         /* Swap front and back buffers */
@@ -468,6 +511,7 @@ void Engine::DrawEditor() {
         for (Component* component : m_SelectedEntity->m_Components) {
             if (ImGui::CollapsingHeader(component->GetName().c_str())) {
                 component->DrawInspector();
+                component->DrawGizmos();
             }
 		}
         ImGui::EndGroup();
@@ -521,16 +565,6 @@ void Engine::EditTransform(Entity* ent) {
 
     ImGuiIO& io = ImGui::GetIO();
     ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
-
-    if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) {
-		m_CurrentOperation = ImGuizmo::TRANSLATE;
-	}
-    else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) {
-        m_CurrentOperation = ImGuizmo::ROTATE;
-	}
-    else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS) {
-        m_CurrentOperation = ImGuizmo::SCALE;
-	}
 
     glm::mat4 viewMatrix = m_MainCamera->GetViewMatrix();
     glm::mat4 projectionMatrix = m_MainCamera->GetProjectionMatrix();

@@ -143,6 +143,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Physics.cpp" />
+    <ClCompile Include="src\Ray.cpp" />
+    <ClCompile Include="src\Bounds.cpp" />
     <ClCompile Include="Dependencies\glm\detail\glm.cpp" />
     <ClCompile Include="Dependencies\gizmos\GraphEditor.cpp" />
     <ClCompile Include="Dependencies\gizmos\ImCurveEdit.cpp" />
@@ -172,6 +175,9 @@
     <ClCompile Include="src\Tools.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Physics.h" />
+    <ClInclude Include="src\Ray.h" />
+    <ClInclude Include="src\Bounds.h" />
     <ClInclude Include="Dependencies\FBXImport\include\FBX\Decoder.h" />
     <ClInclude Include="Dependencies\FBXImport\include\FBX\Face.h" />
     <ClInclude Include="Dependencies\FBXImport\include\FBX\FBXImport.h" />

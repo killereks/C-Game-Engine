@@ -18,6 +18,7 @@ public:
 
 	virtual std::string GetName() = 0;
 	virtual void DrawInspector() = 0;
+	virtual void DrawGizmos() = 0;
 
 	Entity* m_Owner;
 };

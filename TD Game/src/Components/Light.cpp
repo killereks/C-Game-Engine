@@ -22,3 +22,7 @@ void Light::DrawInspector() {
 	ImGui::DragFloat("Intensity", &m_Intensity, 0.1f, 0.0f, 1000.0f);
 	ImGui::DragFloat("Range", &m_Range, 0.1f, 0.0f, 1000.0f);
 }
+
+void Light::DrawGizmos() {
+
+}

@@ -13,6 +13,7 @@
 #include "vec2.hpp"
 #include "../Camera.h"
 #include "../Shader.h"
+#include "../Bounds.h"
 
 class Mesh : public Component {
     std::vector<glm::vec3> m_Vertices;
@@ -28,10 +29,15 @@ class Mesh : public Component {
 
     void Draw();
 
+    Bounds* m_Bounds;
+
     public:
 
     Mesh(std::vector<glm::vec3> vertices, std::vector<glm::vec2> uvs, std::vector<unsigned int> indices);
     Mesh();
+    ~Mesh();
+
+    Bounds GetBounds();
 
     void CreateCube(glm::vec3 size);
     void CreateSphere(float radius, int rings, int sectors);
@@ -43,6 +49,7 @@ class Mesh : public Component {
 
     std::string GetName() override;
     void DrawInspector() override;
+    void DrawGizmos() override;
 
     void Render(Camera* camera, Shader* shader);
 

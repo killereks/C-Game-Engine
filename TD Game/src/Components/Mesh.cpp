@@ -24,6 +24,35 @@ void Mesh::Init() {
 
 }
 
+Mesh::Mesh() {
+    glGenVertexArrays(1, &m_VAO);
+    glGenBuffers(1, &m_VBO);
+    glGenBuffers(1, &m_IBO);
+    glGenBuffers(1, &m_NBO);
+    glGenBuffers(1, &m_UBO);
+
+    m_Bounds = new Bounds();
+}
+
+Mesh::~Mesh() {
+    glDeleteVertexArrays(1, &m_VAO);
+    glDeleteBuffers(1, &m_VBO);
+    glDeleteBuffers(1, &m_IBO);
+    glDeleteBuffers(1, &m_NBO);
+    glDeleteBuffers(1, &m_UBO);
+
+    delete m_Bounds;
+}
+
+Bounds Mesh::GetBounds()
+{
+    // returns bounds in world space
+    glm::vec3 pos = m_Owner->m_Transform.m_Position;
+    glm::vec3 size = m_Bounds->GetSize() / 2.0f * m_Owner->m_Transform.m_Scale;
+
+    return Bounds(pos, size);
+}
+
 void Mesh::LoadFromFile(std::string path) {
     std::ifstream file(path, std::ios::binary | std::ios::ate);
     std::streamsize size = file.tellg();
@@ -103,10 +132,6 @@ void Mesh::RecalculateNormals() {
     }
 
     UpdateBuffers();
-}
-
-Mesh::Mesh() {
-
 }
 
 Mesh::Mesh(std::vector<glm::vec3> vertices, std::vector<glm::vec2> uvs, std::vector<unsigned int> indices) {
@@ -259,12 +284,6 @@ void Mesh::CreatePlane(glm::vec2 size) {
 
 // binds buffers, and updates the information
 void Mesh::UpdateBuffers() {
-    glGenVertexArrays(1, &m_VAO);
-    glGenBuffers(1, &m_VBO);
-    glGenBuffers(1, &m_IBO);
-    glGenBuffers(1, &m_NBO);
-    glGenBuffers(1, &m_UBO);
-
     std::cout << "Vertices length: " << m_Vertices.size() << "\n";
 
     if (m_Vertices.size() > 0) {
@@ -300,6 +319,16 @@ void Mesh::UpdateBuffers() {
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+    m_Bounds->Clear();
+
+    for (auto& v : m_Vertices) {
+        m_Bounds->InsertPoint(v);
+    }
+}
+
+void Mesh::DrawGizmos() {
+
 }
 
 void Mesh::Render(Camera* camera, Shader* shader) {
@@ -345,6 +374,16 @@ void Mesh::DrawInspector() {
     ImGui::Text("Vertices: %d", m_Vertices.size());
     ImGui::Text("UVs: %d", m_UVs.size());
     ImGui::Text("Indices: %d", m_Indices.size());
+
+    ImGui::Text("Normals: %d", m_Normals.size());
+
+    Bounds bounds = GetBounds();
+
+    ImGui::Text("Bounds");
+    ImGui::Text("Min: %f, %f, %f", bounds.GetMin().x, bounds.GetMin().y, bounds.GetMin().z);
+    ImGui::Text("Max: %f, %f, %f", bounds.GetMax().x, bounds.GetMax().y, bounds.GetMax().z);
+    ImGui::Text("Center: %f, %f, %f", bounds.GetCenter().x, bounds.GetCenter().y, bounds.GetCenter().z);
+    ImGui::Text("Size: %f, %f, %f", bounds.GetSize().x, bounds.GetSize().y, bounds.GetSize().z);
 
     if (ImGui::Button("Create Cube")) {
 		CreateCube(glm::vec3(1, 1, 1));
