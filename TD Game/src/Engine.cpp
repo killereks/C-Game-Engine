@@ -603,8 +603,32 @@ void Engine::DrawEditor() {
             if (ImGui::CollapsingHeader(component->GetName().c_str())) {
                 component->DrawInspector();
                 component->DrawGizmos();
+
+                if (ImGui::Button("Remove Component", ImVec2(-FLT_MIN, 0))) {
+                    m_SelectedEntity->RemoveComponent(component);
+                }
             }
 		}
+        ImGui::EndGroup();
+
+        // display add component button
+        ImGui::BeginGroup();
+
+        if (ImGui::Button("Add Component", ImVec2(-FLT_MIN, 0))) {
+			ImGui::OpenPopup("AddComponentPopup");
+		}
+
+        if (ImGui::BeginPopup("AddComponentPopup")) {
+            if (ImGui::MenuItem("Mesh")) {
+				Mesh* mesh = m_SelectedEntity->AddComponent<Mesh>();
+				mesh->CreateCube(glm::vec3(1.0f, 1.0f, 1.0f));
+			}
+            if (ImGui::MenuItem("Light")) {
+				Light* light = m_SelectedEntity->AddComponent<Light>();
+			}
+			ImGui::EndPopup();
+        }
+
         ImGui::EndGroup();
     }
     ImGui::End();

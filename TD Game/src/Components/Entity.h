@@ -61,7 +61,7 @@ public:
     }
 
     template<typename T>
-    void RemoveComponent(T component) {
+    void RemoveComponent(T* component) {
         static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
 
         for (int i = 0; i < m_Components.size(); i++) {
