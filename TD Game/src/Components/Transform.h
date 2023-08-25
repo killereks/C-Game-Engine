@@ -10,7 +10,7 @@
 
 class Transform {
 public:
-    glm::vec3 m_Position = glm::vec3(0.0f);
+    glm::vec3 m_Position = glm::vec3(0.0f, 1.0f, 0.0f);
     glm::quat m_Rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
     glm::vec3 m_Scale = glm::vec3(1.0f);
 
@@ -19,6 +19,8 @@ public:
     glm::vec3 Forward();
     glm::vec3 Right();
     glm::vec3 Up();
+
+    void LookAt(glm::vec3 position);
 
     void Translate(glm::vec3 translation);
 

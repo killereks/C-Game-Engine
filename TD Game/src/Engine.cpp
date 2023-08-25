@@ -72,7 +72,7 @@ Engine::Engine(int width, int height) {
 }
 
 void Engine::StartGameLoop(const std::string path, const std::string projectPath) {
-    std::string shaderPath = path + "/shaders/default/";
+    std::string shaderPath = path + "/shaders/";
 
     m_ProjectPath = projectPath;
 
@@ -81,10 +81,15 @@ void Engine::StartGameLoop(const std::string path, const std::string projectPath
 
     std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
 
-    Shader* shader = new Shader();
-    shader->LoadFromFiles(shaderPath +"/vertex.glsl", shaderPath+"/fragment.glsl");
+    Shader* shader = new Shader("Default");
+    shader->LoadFromFiles(shaderPath +"/default/vertex.glsl", shaderPath+"/default/fragment.glsl");
 
     _defaultShader = shader;
+
+    Shader* lightShader = new Shader("Shadow");
+    lightShader->LoadFromFiles(shaderPath + "/shadows/vertex.glsl", shaderPath + "/shadows/fragment.glsl");
+
+    _lightShader = lightShader;
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) {
@@ -98,7 +103,6 @@ void Engine::StartGameLoop(const std::string path, const std::string projectPath
         if (curWindowWidth != m_WindowWidth || curWindowHeight != m_WindowHeight) {
             m_WindowWidth = curWindowWidth;
             m_WindowHeight = curWindowHeight;
-            glViewport(0, 0, m_WindowWidth, m_WindowHeight);
         }
 
         ImGui_ImplOpenGL3_NewFrame();
@@ -207,16 +211,28 @@ void Engine::StartGameLoop(const std::string path, const std::string projectPath
 
                 Ray ray = m_MainCamera->ScreenPointToRay(glm::vec2(mouseX, mouseY), glm::vec2(m_WindowWidth, m_WindowHeight));
 
+                Entity* curSelectedEntity = nullptr;
+                float minHitDist = 1000000.0f;
+
                 for (auto& ent : m_Entities) {
                     Mesh* mesh = nullptr;
                     if (ent->TryGetComponent(mesh)) {
-                        if (Physics::RayCollisionAABB(ray, mesh->GetBounds())) {
-                            m_SelectedEntity = ent;
-                            std::cout << "Selected Entity: " << ent->m_Name << std::endl;
-                            break;
+                        float hitDist = 0.0f;
+                        if (Physics::RayCollisionAABB(ray, mesh->GetBounds(), hitDist)) {
+                            if (hitDist < minHitDist) {
+								minHitDist = hitDist;
+								curSelectedEntity = ent;
+							}
                         }
                     }
                 }
+
+                if (curSelectedEntity) {
+					m_SelectedEntity = curSelectedEntity;
+				}
+                else {
+					m_SelectedEntity = nullptr;
+				}
             }
         }
 
@@ -297,15 +313,19 @@ Engine::~Engine() {
     delete m_MainCamera;
 	delete _defaultShader;
 
+    delete lightMapper;
+
     for (auto entity : m_Entities) {
 		delete entity;
 	}
 }
 
 void Engine::Awake() {
-    m_MainCamera = new Camera();
+    m_MainCamera = new Camera(90.0f, 0.1f, 1000.0f);
 
     m_MainCamera->m_Transform.m_Position = glm::vec3(0.0f, 2.0f, 5.0f);
+
+    lightMapper = new LightMapper(2048, 2048);
 
     // update every entity
     for (auto entity : m_Entities) {
@@ -313,6 +333,31 @@ void Engine::Awake() {
             component->Init();
         }
     }
+
+    // setup basic scene
+    Entity* ent = new Entity("Plane");
+    Mesh* mesh = ent->AddComponent<Mesh>();
+    mesh->CreatePlane(glm::vec3(20));
+
+    ent->m_Transform.m_Position = glm::vec3(0.0f, -1.0f, 0.0f);
+
+    m_Entities.push_back(ent);
+
+    ent = new Entity("Sphere");
+    mesh = ent->AddComponent<Mesh>();
+    mesh->CreateSphere(1.0f, 5, 5);
+
+    ent->m_Transform.m_Position = glm::vec3(0.0f, 2.0f, 0.0f);
+
+    m_Entities.push_back(ent);
+
+    ent = new Entity("Light");
+    Light* light = ent->AddComponent<Light>();
+
+    ent->m_Transform.m_Position = glm::vec3(1.0f, 5.0f, -1.0f);
+    ent->m_Transform.LookAt(glm::vec3(0.0f, 0.0f, 0.0f));
+
+    m_Entities.push_back(ent);
 }
 
 void Engine::Update(float m_DeltaTime) {
@@ -327,33 +372,75 @@ void Engine::Update(float m_DeltaTime) {
 void Engine::Render() {
     _defaultShader->Bind();
 
-    std::vector<Light*> lights;
+    Light directional_light;
+    bool foundLight = false;
+
+    Camera* lightCam = nullptr;
 
     for (auto& entity : m_Entities) {
 		Light* light = nullptr;
         if (entity->TryGetComponent<Light>(light)) {
-            lights.push_back(light);
+            directional_light = *light;
+            foundLight = true;
 		}
 	}
 
-    for (int i = 0; i < lights.size(); i++) {
-        std::string uniformName = "lights[" + std::to_string(i) + "]";
+    if (foundLight){
+        // light camera
+        lightCam = new Camera(-20, 20, -20, 20, -30, 30);
 
-        _defaultShader->SetVec3(uniformName + ".position", lights[i]->m_Owner->m_Transform.m_Position);
-        _defaultShader->SetVec3(uniformName + ".color", lights[i]->m_Color);
-        _defaultShader->SetFloat(uniformName + ".intensity", lights[i]->m_Intensity);
-        _defaultShader->SetFloat(uniformName + ".range", lights[i]->m_Range);
-	}
+        directional_light.m_Owner->m_Transform.LookAt(glm::vec3(0.0f));
 
+        lightMapper->Bind();
+
+        _lightShader->Bind();
+
+        glm::mat4 lightSpaceMatrix = lightCam->GetProjectionMatrix() * directional_light.m_Owner->m_Transform.GetModelMatrix();
+
+        _lightShader->SetMat4("lightSpaceMatrix", lightSpaceMatrix);
+
+        // enable face culling
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_FRONT);
+
+        // LIGHT PASS
+        for (Entity* entity : m_Entities) {
+            // render entity
+            Mesh* mesh = nullptr;
+            if (entity->TryGetComponent<Mesh>(mesh)) {
+                _lightShader->SetMat4("model", mesh->m_Owner->m_Transform.GetModelMatrix());
+                mesh->Draw();
+            }
+        }
+        lightMapper->Unbind();
+    }
+
+    glViewport(0, 0, m_WindowWidth, m_WindowHeight);
+
+    glCullFace(GL_BACK);
+
+    // RENDER PASS
     for (Entity* entity : m_Entities) {
 		// render entity
         Mesh* mesh = nullptr;
         if (entity->TryGetComponent<Mesh>(mesh)) {
-            mesh->Render(m_MainCamera, _defaultShader);
+            mesh->SetupRender(m_MainCamera, _defaultShader);
+
+            if (foundLight) {
+                lightMapper->SetUniforms(_defaultShader);
+
+                glm::mat4 lightProjection = lightCam->GetProjectionMatrix() * directional_light.m_Owner->m_Transform.GetModelMatrix();
+                _defaultShader->SetMat4("lightProjection", lightProjection);
+                _defaultShader->SetVec3("lightDir", directional_light.m_Owner->m_Transform.Forward());
+            }
+
+            mesh->Draw();
         }
 	}
 
     _defaultShader->Unbind();
+
+    delete lightCam;
 }
 
 void Engine::DrawEditor() {
@@ -503,6 +590,10 @@ void Engine::DrawEditor() {
             ImGui::InputFloat3("##Scale", &m_SelectedEntity->m_Transform.m_Scale.x);
             ImGui::PopID();
 
+            if (ImGui::Button("Look At Origin")) {
+                m_SelectedEntity->m_Transform.LookAt(glm::vec3(0.0f));
+            }
+
             ImGui::EndGroup();
         }
 
@@ -531,13 +622,25 @@ void Engine::DrawEditor() {
             if (ImGui::Button(name.c_str(), ImVec2(-FLT_MIN, 0))) {
 				std::cout << name << std::endl;
 			}
-		}
+        }
+        else {
+            std::string name = p.path().filename().string();
+            if (ImGui::Button(name.c_str(), ImVec2(-FLT_MIN, 0))) {
+
+            }
+        }
 	}
 
     ImGui::PopStyleVar();
 	ImGui::PopStyleVar();
 
 	ImGui::End();
+
+    ImGui::Begin("Shadow Map");
+
+    ImGui::Image((void*)lightMapper->shadowMapFBO, ImVec2(512, 512), ImVec2(0, 1), ImVec2(1, 0));
+
+    ImGui::End();
 
 	ImGui::Render();
 }

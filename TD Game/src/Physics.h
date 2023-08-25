@@ -10,12 +10,5 @@ class Physics
 	Physics();
 	~Physics();
 
-	static bool RayCollisionAABB(Ray ray, Bounds bounds);
-};
-
-struct RaycastHit
-{
-	glm::vec3 m_Point;
-	glm::vec3 m_Normal;
-	float m_Distance;
+	static bool RayCollisionAABB(Ray ray, Bounds bounds, float & distance);
 };

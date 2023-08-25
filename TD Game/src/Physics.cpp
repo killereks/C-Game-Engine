@@ -10,7 +10,7 @@ Physics::~Physics() {
 
 }
 
-bool Physics::RayCollisionAABB(Ray ray, Bounds bounds)
+bool Physics::RayCollisionAABB(Ray ray, Bounds bounds, float & distance)
 {
 	glm::vec3 dirfrac;
 
@@ -37,6 +37,8 @@ bool Physics::RayCollisionAABB(Ray ray, Bounds bounds)
 	{
 		return false;
 	}
+
+	distance = tmin;
 
 	return true;
 }

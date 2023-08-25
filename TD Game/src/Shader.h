@@ -11,7 +11,7 @@
 
 class Shader {
 public:
-	Shader();
+	Shader(std::string name);
 	Shader(std::string vertex, std::string fragment);
 	~Shader();
 
@@ -25,6 +25,8 @@ public:
 	void SetVec3(std::string name, float x, float y, float z);
 	void SetVec3(std::string name, glm::vec3 value);
 	void SetMat4(std::string name, glm::mat4 value);
+
+	std::string m_Name;
 
     unsigned int GetID() const { return m_RendererID; }
 

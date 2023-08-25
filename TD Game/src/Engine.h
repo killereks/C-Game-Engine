@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 
+#include "LightMapper.h"
 #include "Components/Transform.h"
 #include "Components/Entity.h"
 #include "Camera.h"
@@ -43,6 +44,7 @@ private:
     GLFWwindow* window;
 
     Shader* _defaultShader;
+    Shader* _lightShader;
 
     std::vector<float> m_FPSGraph;
 
@@ -58,6 +60,8 @@ private:
     void EditTransform(Entity* entity);
 
     std::string m_ProjectPath;
+
+    LightMapper* lightMapper;
 
     bool leftClicked = false;
 };

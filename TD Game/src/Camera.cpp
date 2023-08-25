@@ -8,7 +8,28 @@ glm::mat4 Camera::GetViewMatrix() {
     return glm::inverse(m_Transform.GetModelMatrix());
 }
 
+Camera::Camera(float fov, float near, float far) {
+	m_FOV = fov;
+	m_Near = near;
+	m_Far = far;
+
+	m_IsOrtho = false;
+}
+
+Camera::Camera(float left, float right, float bottom, float top, float near, float far) {
+	m_Left = left;
+	m_Right = right;
+	m_Bottom = bottom;
+	m_Top = top;
+	m_OrthoNear = near;
+	m_OrthoFar = far;
+	m_IsOrtho = true;
+}
+
 glm::mat4 Camera::GetProjectionMatrix() {
+	if (m_IsOrtho) {
+		return glm::ortho(m_Left, m_Right, m_Bottom, m_Top, m_OrthoNear, m_OrthoFar);
+	}
     return glm::perspective(glm::radians(m_FOV), 4.0f / 3.0f, m_Near, m_Far);
 }
 

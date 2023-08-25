@@ -27,8 +27,6 @@ class Mesh : public Component {
     unsigned int m_IBO; // Index Buffer Object
     unsigned int m_NBO; // Normal Buffer Object
 
-    void Draw();
-
     Bounds* m_Bounds;
 
     public:
@@ -36,6 +34,8 @@ class Mesh : public Component {
     Mesh(std::vector<glm::vec3> vertices, std::vector<glm::vec2> uvs, std::vector<unsigned int> indices);
     Mesh();
     ~Mesh();
+
+    void Draw();
 
     Bounds GetBounds();
 
@@ -51,7 +51,7 @@ class Mesh : public Component {
     void DrawInspector() override;
     void DrawGizmos() override;
 
-    void Render(Camera* camera, Shader* shader);
+    void SetupRender(Camera* camera, Shader* shader);
 
     void RecalculateNormals();
     void UpdateBuffers();

@@ -143,6 +143,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\LightMapper.cpp" />
     <ClCompile Include="src\Physics.cpp" />
     <ClCompile Include="src\Ray.cpp" />
     <ClCompile Include="src\Bounds.cpp" />
@@ -175,6 +176,7 @@
     <ClCompile Include="src\Tools.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\LightMapper.h" />
     <ClInclude Include="src\Physics.h" />
     <ClInclude Include="src\Ray.h" />
     <ClInclude Include="src\Bounds.h" />

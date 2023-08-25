@@ -28,8 +28,9 @@ void CheckOpenGLError(const char* stmt, const char* fname, int line)
 #define GL_CHECK(stmt) stmt
 #endif
 
-Shader::Shader() {
-
+Shader::Shader(std::string name)
+{
+	m_Name = name;
 }
 
 Shader::Shader(std::string vertex, std::string fragment) {
@@ -174,7 +175,7 @@ int Shader::GetUniformLocation(const std::string& name) {
 
 	int location = glGetUniformLocation(m_RendererID, name.c_str());
 	if (location == -1)
-		std::cout << "Warning: uniform '" << name << "' doesn't exist!" << std::endl;
+		std::cout << "Warning: uniform '" << name << "' on " << m_Name << " doesn't exist!" << std::endl;
 	//m_UniformLocationCache[name] = location;
 	return location;
 }

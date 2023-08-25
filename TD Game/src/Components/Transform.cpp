@@ -26,6 +26,21 @@ glm::vec3 Transform::Up() {
     return m_Rotation * glm::vec3(0.0f, 1.0f, 0.0f);
 }
 
+void Transform::LookAt(glm::vec3 position)
+{
+    float dx = position.x - m_Position.x;
+    float dz = position.z - m_Position.z;
+
+    if (dx == 0.0f && dz == 0.0f) {
+		return;
+	}
+
+    glm::mat4 lookMat4 = glm::lookAt(m_Position, position, glm::vec3(0.0f, 1.0f, 0.0f));
+
+    m_Rotation = glm::quat_cast(lookMat4);
+    //m_Rotation = glm::inverse(m_Rotation);
+}
+
 void Transform::Translate(glm::vec3 translation) {
     m_Position += translation;
 }

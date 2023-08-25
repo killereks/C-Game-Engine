@@ -331,17 +331,12 @@ void Mesh::DrawGizmos() {
 
 }
 
-void Mesh::Render(Camera* camera, Shader* shader) {
+void Mesh::SetupRender(Camera* camera, Shader* shader) {
     shader->Bind();
 
-    shader->SetVec3("viewDir", camera->m_Transform.Forward());
     shader->SetMat4("model", m_Owner->m_Transform.GetModelMatrix());
     shader->SetMat4("view", camera->GetViewMatrix());
     shader->SetMat4("projection", camera->GetProjectionMatrix());
-
-    Draw();
-
-    shader->Unbind();
 }
 
 void Mesh::Draw() {
