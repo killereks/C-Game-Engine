@@ -23,6 +23,9 @@ public:
     Engine(int width, int height);
     ~Engine();
 
+    void SaveScene(std::string path);
+    void LoadScene(std::string path);
+
     Camera* m_MainCamera;
 
     void Awake();

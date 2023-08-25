@@ -23,6 +23,9 @@ public:
 
     std::vector<Component*> m_Components;
 
+    void Save(std::ostream& os);
+    void Load(std::istream& is);
+
     template<typename T>
     T* AddComponent() {
         static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");

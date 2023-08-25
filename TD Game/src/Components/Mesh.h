@@ -51,6 +51,11 @@ class Mesh : public Component {
     void DrawInspector() override;
     void DrawGizmos() override;
 
+    void Save(std::ostream& os) override;
+    void Load(std::istream& is) override;
+
+    ComponentType GetType() override;
+
     void SetupRender(Camera* camera, Shader* shader);
 
     void RecalculateNormals();

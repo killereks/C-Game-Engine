@@ -140,11 +140,9 @@ void Engine::StartGameLoop(const std::string path, const std::string projectPath
 
         EditorLoop(m_deltaTime);
 
-        // bottom right
-        ImGui::SetNextWindowPos(ImVec2(m_WindowWidth - 300, 20));
-        ImGui::SetNextWindowSize(ImVec2(300, 200));
-
         float predictedFps = 1.0f / total_time_to_render;
+
+        ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode, nullptr);
 
         // disable resize
         ImGui::Begin("Frame Data", NULL, ImGuiWindowFlags_NoResize);
@@ -335,6 +333,37 @@ Engine::~Engine() {
 	}
 }
 
+void Engine::SaveScene(std::string path)
+{
+    std::ofstream ofs(path, std::ios::binary);
+    size_t numEntities = m_Entities.size();
+    ofs.write(reinterpret_cast<const char*>(&numEntities), sizeof(numEntities));
+
+    for (Entity* entity : m_Entities) {
+        entity->Save(ofs);
+    }
+}
+
+void Engine::LoadScene(std::string path)
+{
+    std::ifstream ifs(path, std::ios::binary);
+
+    size_t numEntities;
+    ifs.read(reinterpret_cast<char*>(&numEntities), sizeof(numEntities));
+
+    std::cout << "Loading scene with " << numEntities << " entities" << std::endl;
+
+    m_Entities.clear();
+
+    for (int i = 0; i < numEntities; i++) {
+        Entity* entity = new Entity("Test");
+		entity->Load(ifs);
+
+        m_Entities.push_back(entity);
+	}
+
+}
+
 void Engine::Awake() {
     m_MainCamera = new Camera(90.0f, 0.1f, 1000.0f);
 
@@ -478,9 +507,12 @@ void Engine::DrawEditor() {
     // create top toolbar
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu(ICON_FA_FILE" File")) {
-            if (ImGui::MenuItem("New Scene")) {
-
+            if (ImGui::MenuItem("Save Scene")) {
+                SaveScene(m_ProjectPath + "/scene.dat");
             }
+            if (ImGui::MenuItem("Load Scene")) {
+                LoadScene(m_ProjectPath + "/scene.dat");
+			}
             if (ImGui::MenuItem("Open FBX")) {
                 ImGuiFileDialog::Instance()->OpenDialog("ChooseFBX", "Choose FBX", ".fbx", ".", 1, nullptr, ImGuiFileDialogFlags_Modal);
             }
@@ -540,16 +572,14 @@ void Engine::DrawEditor() {
         }
     }
 
-    ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode, nullptr);
-
     ImGui::Begin(ICON_FA_SITEMAP " Hierarchy");
 
     ImGui::BeginChild("Hierarchy", ImVec2(0, 0), true);
 
+    int index = 0;
+
     ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.5f));
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
-
-    int index = 0;
 
     for (Entity* entity : m_Entities) {
         if (m_SelectedEntity == entity) {
@@ -559,9 +589,20 @@ void Engine::DrawEditor() {
 			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
 		}
 
-        if (ImGui::Button(entity->m_Name.c_str(), ImVec2(-FLT_MIN, 0))) {
+        float windowWidth = ImGui::GetWindowWidth();
+        float buttonWidth = windowWidth - 65;
+
+        std::string name = ICON_FA_CARET_RIGHT" " + entity->m_Name;
+        if (ImGui::Button(name.c_str(), ImVec2(buttonWidth, 0))) {
             m_SelectedEntity = entity;
         }
+
+        ImGui::SameLine();
+        if (ImGui::Button(ICON_FA_TRASH, ImVec2(65, 0))) {
+			m_Entities.erase(m_Entities.begin() + index);
+			delete entity;
+			m_SelectedEntity = nullptr;
+		}
 
         index++;
 
@@ -622,6 +663,8 @@ void Engine::DrawEditor() {
         ImGui::BeginGroup();
 
         for (Component* component : m_SelectedEntity->m_Components) {
+            float windowWidth = ImGui::GetWindowWidth();
+
             if (ImGui::CollapsingHeader(component->GetName().c_str())) {
                 component->DrawInspector();
                 component->DrawGizmos();
@@ -658,7 +701,7 @@ void Engine::DrawEditor() {
 
     ImGui::PopStyleColor(2);
 
-    ImGui::Begin("File System");
+    ImGui::Begin("File System", 0, ImGuiWindowFlags_AlwaysVerticalScrollbar);
 
     ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.5f));
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);

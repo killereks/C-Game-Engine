@@ -145,60 +145,39 @@ Mesh::Mesh(std::vector<glm::vec3> vertices, std::vector<glm::vec2> uvs, std::vec
 }
 
 void Mesh::CreateCube(glm::vec3 size) {
-    std::vector<glm::vec3> verts;
-    std::vector<glm::vec2> uvs;
-    std::vector<unsigned int> indices;
+    size *= 0.5f;
 
-    verts.push_back(glm::vec3(-size.x, -size.y, -size.z));
-    verts.push_back(glm::vec3(-size.x, -size.y, size.z));
-    verts.push_back(glm::vec3(size.x, -size.y, size.z));
-    verts.push_back(glm::vec3(size.x, -size.y, -size.z));
-    verts.push_back(glm::vec3(-size.x, size.y, -size.z));
-    verts.push_back(glm::vec3(-size.x, size.y, size.z));
-    verts.push_back(glm::vec3(size.x, size.y, size.z));
-    verts.push_back(glm::vec3(size.x, size.y, -size.z));
+    std::vector<glm::vec3> verts = {
+        // front face
+        glm::vec3(-size.x, -size.y, size.z),
+        glm::vec3(size.x, -size.y, size.z),
+        glm::vec3(size.x, size.y, size.z),
+        glm::vec3(-size.x, size.y, size.z),
+        // Back face
+        glm::vec3(size.x, -size.y, -size.z),
+        glm::vec3(-size.x, -size.y, -size.z),
+        glm::vec3(-size.x, size.y, -size.z),
+        glm::vec3(size.x, size.y, -size.z)
+    };
+    std::vector<glm::vec2> uvs = {
+        glm::vec2(0.0f, 0.0f),
+        glm::vec2(1.0f, 0.0f),
+        glm::vec2(1.0f, 1.0f),
+        glm::vec2(0.0f, 1.0f),
 
-    indices.push_back(0);
-    indices.push_back(1);
-    indices.push_back(2);
-    indices.push_back(0);
-    indices.push_back(2);
-    indices.push_back(3);
-
-    indices.push_back(4);
-    indices.push_back(5);
-    indices.push_back(6);
-    indices.push_back(4);
-    indices.push_back(6);
-    indices.push_back(7);
-
-    indices.push_back(0);
-    indices.push_back(1);
-    indices.push_back(5);
-    indices.push_back(0);
-    indices.push_back(5);
-    indices.push_back(4);
-
-    indices.push_back(2);
-    indices.push_back(3);
-    indices.push_back(7);
-    indices.push_back(2);
-    indices.push_back(7);
-    indices.push_back(6);
-
-    indices.push_back(1);
-    indices.push_back(2);
-    indices.push_back(6);
-    indices.push_back(1);
-    indices.push_back(6);
-    indices.push_back(5);
-
-    indices.push_back(0);
-    indices.push_back(3);
-    indices.push_back(7);
-    indices.push_back(0);
-    indices.push_back(7);
-    indices.push_back(4);
+        glm::vec2(0.0f, 0.0f),
+        glm::vec2(1.0f, 0.0f),
+        glm::vec2(1.0f, 1.0f),
+        glm::vec2(0.0f, 1.0f)
+    };
+    std::vector<unsigned int> indices = {
+        0, 1, 2, 2, 3, 0,   // Front face
+        4, 5, 6, 6, 7, 4,   // Back face
+        5, 0, 3, 3, 6, 5,   // Left face
+        1, 4, 7, 7, 2, 1,   // Right face
+        3, 2, 7, 7, 6, 3,   // Top face
+        5, 4, 1, 1, 0, 5    // Bottom face
+    };
 
     this->m_Vertices = verts;
     this->m_UVs = uvs;
@@ -251,6 +230,8 @@ void Mesh::CreateSphere(float radius, int rings, int sectors) {
 }
 
 void Mesh::CreatePlane(glm::vec2 size) {
+    size *= 0.5f;
+
     std::vector<glm::vec3> verts;
     std::vector<glm::vec2> uvs;
     std::vector<unsigned int> indices;
@@ -333,6 +314,60 @@ void Mesh::DrawGizmos() {
 
 }
 
+void Mesh::Save(std::ostream& os)
+{
+    os << m_Vertices.size() << "\n";
+    for (auto& v : m_Vertices) {
+		os << v.x << " " << v.y << " " << v.z << "\n";
+	}
+
+	os << m_UVs.size() << "\n";
+    for (auto& v : m_UVs) {
+		os << v.x << " " << v.y << "\n";
+	}
+
+	os << m_Indices.size() << "\n";
+    for (auto& v : m_Indices) {
+		os << v << "\n";
+	}
+
+	os << m_Normals.size() << "\n";
+    for (auto& v : m_Normals) {
+		os << v.x << " " << v.y << " " << v.z << "\n";
+	}
+}
+
+void Mesh::Load(std::istream& is)
+{
+	int size;
+	is >> size;
+
+	m_Vertices.resize(size);
+    for (auto& v : m_Vertices) {
+		is >> v.x >> v.y >> v.z;
+	}
+
+	is >> size;
+	m_UVs.resize(size);
+    for (auto& v : m_UVs) {
+		is >> v.x >> v.y;
+	}
+
+	is >> size;
+	m_Indices.resize(size);
+    for (auto& v : m_Indices) {
+		is >> v;
+	}
+
+	is >> size;
+	m_Normals.resize(size);
+    for (auto& v : m_Normals) {
+		is >> v.x >> v.y >> v.z;
+	}
+
+	UpdateBuffers();
+}
+
 void Mesh::SetupRender(Camera* camera, Shader* shader) {
     shader->Bind();
 
@@ -382,14 +417,18 @@ void Mesh::DrawInspector() {
     ImGui::Text("Center: %f, %f, %f", bounds.GetCenter().x, bounds.GetCenter().y, bounds.GetCenter().z);
     ImGui::Text("Size: %f, %f, %f", bounds.GetSize().x, bounds.GetSize().y, bounds.GetSize().z);
 
-    if (ImGui::Button("Create Cube")) {
+    if (ImGui::Button(ICON_FA_CUBE" Create Cube")) {
 		CreateCube(glm::vec3(1, 1, 1));
 	}
-    if (ImGui::Button("Create Sphere")) {
+    if (ImGui::Button(ICON_FA_CIRCLE" Create Sphere")) {
 		CreateSphere(1, 32, 32);
 	}
 
-    if (ImGui::Button("Create Plane")) {
+    if (ImGui::Button(ICON_FA_SQUARE" Create Plane")) {
 		CreatePlane(glm::vec2(1, 1));
 	}
+}
+
+ComponentType Mesh::GetType() {
+    return ComponentType::Mesh;
 }
