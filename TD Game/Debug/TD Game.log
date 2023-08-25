@@ -1,13 +1,1 @@
-﻿  Engine.cpp
-C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(129,54): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(132,28): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(151,19): warning C4018: '<': signed/unsigned mismatch
-C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(279,36): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
-C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(280,36): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
-C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Components\Entity.h(67,27): warning C4018: '<': signed/unsigned mismatch
-C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\src\Engine.cpp(608,37): message : see reference to function template instantiation 'void Entity::RemoveComponent<Component>(T *)' being compiled
-          with
-          [
-              T=Component
-          ]
-  TD Game.vcxproj -> C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\Debug\TD Game.exe
+﻿  TD Game.vcxproj -> C:\Users\ssnee\Desktop\CPP-Game-Engine\TD Game\Debug\TD Game.exe

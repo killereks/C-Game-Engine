@@ -16,6 +16,8 @@
 
 #include <OpenFBX/ofbx.h>
 
+#include "Icons/IconsFontAwesome5.h"
+
 void Mesh::Update(float dt) {
 
 }
@@ -362,7 +364,7 @@ void Mesh::Draw() {
 }
 
 std::string Mesh::GetName() {
-	return "Mesh";
+	return ICON_FA_CUBE" Mesh";
 }
 
 void Mesh::DrawInspector() {

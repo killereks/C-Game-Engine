@@ -19,6 +19,7 @@
 #include <ext.hpp>
 #include <Light.h>
 #include <filesystem>
+#include <Icons/IconsFontAwesome5.h>
 
 Engine::Engine(int width, int height) {
     GLFWwindow* window;
@@ -90,6 +91,20 @@ void Engine::StartGameLoop(const std::string path, const std::string projectPath
     lightShader->LoadFromFiles(shaderPath + "/shadows/vertex.glsl", shaderPath + "/shadows/fragment.glsl");
 
     _lightShader = lightShader;
+
+    auto io = ImGui::GetIO();
+
+    io.Fonts->AddFontDefault();
+    float baseFontSize = 20.0f;
+    float iconFontSize = baseFontSize * 2.0f / 3.0f;
+
+    static const ImWchar icons_ranges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
+    ImFontConfig icons_config;
+    icons_config.MergeMode = true;
+    icons_config.PixelSnapH = true;
+    icons_config.GlyphMinAdvanceX = iconFontSize;
+    std::string fontPath = path + "/fa-solid-900.ttf";
+    io.Fonts->AddFontFromFileTTF(fontPath.c_str(), iconFontSize, &icons_config, icons_ranges);
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) {
@@ -462,7 +477,7 @@ void Engine::DrawEditor() {
     }
     // create top toolbar
     if (ImGui::BeginMainMenuBar()) {
-        if (ImGui::BeginMenu("File")) {
+        if (ImGui::BeginMenu(ICON_FA_FILE" File")) {
             if (ImGui::MenuItem("New Scene")) {
 
             }
@@ -473,7 +488,7 @@ void Engine::DrawEditor() {
             ImGui::EndMenu();
         }
 
-        if (ImGui::BeginMenu("Entity Creator")) {
+        if (ImGui::BeginMenu(ICON_FA_CUBE" Entity Creator")) {
             if (ImGui::BeginMenu("Create 3D Object")) {
                 if (ImGui::MenuItem("Plane (1x1)")) {
                     Entity* ent = new Entity(GetValidName("Plane"));
@@ -514,7 +529,7 @@ void Engine::DrawEditor() {
             ImGui::EndMenu();
         }
 
-        if (ImGui::BeginMenu("Camera Settings")) {
+        if (ImGui::BeginMenu(ICON_FA_CAMERA" Camera Settings")) {
             ImGui::BeginGroup();
             ImGui::DragFloat("FOV", &m_MainCamera->m_FOV, 1.f, 1.f, 179.f, "%.0f");
             ImGui::DragFloat("Near", &m_MainCamera->m_Near, 0.1f, 0.1f, 100.f, "%.1f");
@@ -527,7 +542,7 @@ void Engine::DrawEditor() {
 
     ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode, nullptr);
 
-    ImGui::Begin("Hierarchy");
+    ImGui::Begin(ICON_FA_SITEMAP " Hierarchy");
 
     ImGui::BeginChild("Hierarchy", ImVec2(0, 0), true);
 
@@ -546,8 +561,6 @@ void Engine::DrawEditor() {
 
         if (ImGui::Button(entity->m_Name.c_str(), ImVec2(-FLT_MIN, 0))) {
             m_SelectedEntity = entity;
-
-            std::cout << "Selected Entity: " << m_SelectedEntity->m_Name << index << std::endl;
         }
 
         index++;
@@ -565,12 +578,12 @@ void Engine::DrawEditor() {
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
     ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
 
-    ImGui::Begin("Inspector", NULL, ImGuiWindowFlags_NoResize);
+    ImGui::Begin(ICON_FA_BINOCULARS" Inspector", NULL, ImGuiWindowFlags_NoResize);
 
     if (m_SelectedEntity != nullptr) {
         ImGui::Text(m_SelectedEntity->m_Name.c_str());
 
-        if (ImGui::CollapsingHeader("Transform")) {
+        if (ImGui::CollapsingHeader(ICON_FA_ARROWS_ALT " Transform")) {
             ImGui::BeginGroup();
             // position
             ImGui::PushID("Position");
@@ -578,11 +591,15 @@ void Engine::DrawEditor() {
             ImGui::InputFloat3("##Position", &m_SelectedEntity->m_Transform.m_Position.x);
             ImGui::PopID();
 
+            glm::vec3 rotation = m_SelectedEntity->m_Transform.GetEuler();
+
             // rotation
             ImGui::PushID("Rotation");
             ImGui::Text("Rotation");
-            ImGui::InputFloat4("##Rotation", &m_SelectedEntity->m_Transform.m_Rotation.x);
+            ImGui::InputFloat3("##Rotation", &rotation[0]);
             ImGui::PopID();
+
+            m_SelectedEntity->m_Transform.SetRotationEuler(rotation);
 
             // scale
             ImGui::PushID("Scale");
@@ -590,31 +607,37 @@ void Engine::DrawEditor() {
             ImGui::InputFloat3("##Scale", &m_SelectedEntity->m_Transform.m_Scale.x);
             ImGui::PopID();
 
-            if (ImGui::Button("Look At Origin")) {
+            ImGui::Separator();
+
+            if (ImGui::Button("Look At Origin", ImVec2(-FLT_MIN, 0))) {
                 m_SelectedEntity->m_Transform.LookAt(glm::vec3(0.0f));
             }
+
+            ImGui::Separator();
 
             ImGui::EndGroup();
         }
 
         // display components
         ImGui::BeginGroup();
+
         for (Component* component : m_SelectedEntity->m_Components) {
             if (ImGui::CollapsingHeader(component->GetName().c_str())) {
                 component->DrawInspector();
                 component->DrawGizmos();
 
-                if (ImGui::Button("Remove Component", ImVec2(-FLT_MIN, 0))) {
+                if (ImGui::Button(ICON_FA_TRASH" Remove Component", ImVec2(-FLT_MIN, 0))) {
                     m_SelectedEntity->RemoveComponent(component);
                 }
             }
+            ImGui::Separator();
 		}
         ImGui::EndGroup();
 
         // display add component button
         ImGui::BeginGroup();
 
-        if (ImGui::Button("Add Component", ImVec2(-FLT_MIN, 0))) {
+        if (ImGui::Button(ICON_FA_PLUS" Add Component", ImVec2(-FLT_MIN, 0))) {
 			ImGui::OpenPopup("AddComponentPopup");
 		}
 

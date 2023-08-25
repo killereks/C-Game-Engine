@@ -1,12 +1,13 @@
-#include "Light.h"
+﻿#include "Light.h"
 #include <imgui.h>
+#include "Icons/IconsFontAwesome5.h"
 
 Light::Light() {
 
 }
 
 std::string Light::GetName() {
-	return "Light";
+	return ICON_FA_LIGHTBULB" Light";
 }
 
 void Light::Init() {

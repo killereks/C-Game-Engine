@@ -176,6 +176,19 @@
     <ClCompile Include="src\Tools.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Dependencies\Icons\IconsCodicons.h" />
+    <ClInclude Include="Dependencies\Icons\IconsFontaudio.h" />
+    <ClInclude Include="Dependencies\Icons\IconsFontAwesome4.h" />
+    <ClInclude Include="Dependencies\Icons\IconsFontAwesome5.h" />
+    <ClInclude Include="Dependencies\Icons\IconsFontAwesome5Brands.h" />
+    <ClInclude Include="Dependencies\Icons\IconsFontAwesome5Pro.h" />
+    <ClInclude Include="Dependencies\Icons\IconsFontAwesome5ProBrands.h" />
+    <ClInclude Include="Dependencies\Icons\IconsFontAwesome6.h" />
+    <ClInclude Include="Dependencies\Icons\IconsFontAwesome6Brands.h" />
+    <ClInclude Include="Dependencies\Icons\IconsForkAwesome.h" />
+    <ClInclude Include="Dependencies\Icons\IconsKenney.h" />
+    <ClInclude Include="Dependencies\Icons\IconsMaterialDesign.h" />
+    <ClInclude Include="Dependencies\Icons\IconsMaterialDesignIcons.h" />
     <ClInclude Include="src\LightMapper.h" />
     <ClInclude Include="src\Physics.h" />
     <ClInclude Include="src\Ray.h" />
