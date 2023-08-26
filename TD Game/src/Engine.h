@@ -44,6 +44,8 @@ private:
 
     float lastFrameTime;
 
+
+
     GLFWwindow* window;
 
     Shader* _defaultShader;

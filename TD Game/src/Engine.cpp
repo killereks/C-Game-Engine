@@ -478,6 +478,15 @@ void Engine::Render() {
                 _defaultShader->SetVec3("lightDir", directional_light.m_Owner->m_Transform.Forward());
             }
 
+            _defaultShader->SetVec3("camFwd", m_MainCamera->m_Transform.Forward());
+
+            if (m_SelectedEntity == entity) {
+                _defaultShader->SetInt("selected", 1);
+            }
+            else {
+                _defaultShader->SetInt("selected", 0);
+            }
+
             mesh->Draw();
         }
 	}
@@ -598,11 +607,14 @@ void Engine::DrawEditor() {
         }
 
         ImGui::SameLine();
+        ImGui::PushID(index);
         if (ImGui::Button(ICON_FA_TRASH, ImVec2(65, 0))) {
 			m_Entities.erase(m_Entities.begin() + index);
 			delete entity;
 			m_SelectedEntity = nullptr;
+            --index;
 		}
+        ImGui::PopID();
 
         index++;
 

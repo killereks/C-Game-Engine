@@ -3,6 +3,7 @@
 #include "Icons/IconsFontAwesome5.h"
 
 #include "Entity.h"
+#include <GL/glew.h>
 
 Light::Light() {
 
