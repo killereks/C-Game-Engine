@@ -389,7 +389,7 @@ void Engine::Awake() {
 
     ent = new Entity("Sphere");
     mesh = ent->AddComponent<Mesh>();
-    mesh->CreateSphere(1.0f, 5, 5);
+    mesh->CreateSphere(1.0f, 32, 32);
 
     ent->m_Transform.m_Position = glm::vec3(0.0f, 2.0f, 0.0f);
 
@@ -506,7 +506,24 @@ void Engine::DrawEditor() {
 
             Entity* ent = new Entity(GetValidName(modelName));
             Mesh* mesh = ent->AddComponent<Mesh>();
-            mesh->LoadFromFile(filePathName);
+            mesh->LoadFromFileFBX(filePathName);
+
+            m_Entities.push_back(ent);
+        }
+
+        ImGuiFileDialog::Instance()->Close();
+    }
+
+    if (ImGuiFileDialog::Instance()->Display("ChooseOBJ")) {
+        if (ImGuiFileDialog::Instance()->IsOk()) {
+            std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+            std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
+
+            std::string modelName = filePathName.substr(filePathName.find_last_of("/\\") + 1);
+
+            Entity* ent = new Entity(GetValidName(modelName));
+            Mesh* mesh = ent->AddComponent<Mesh>();
+            mesh->LoadFromFileOBJ(filePathName);
 
             m_Entities.push_back(ent);
         }
@@ -522,8 +539,14 @@ void Engine::DrawEditor() {
             if (ImGui::MenuItem("Load Scene")) {
                 LoadScene(m_ProjectPath + "/scene.dat");
 			}
-            if (ImGui::MenuItem("Open FBX")) {
-                ImGuiFileDialog::Instance()->OpenDialog("ChooseFBX", "Choose FBX", ".fbx", ".", 1, nullptr, ImGuiFileDialogFlags_Modal);
+            if (ImGui::BeginMenu("Open")) {
+                if (ImGui::MenuItem("FBX")) {
+                    ImGuiFileDialog::Instance()->OpenDialog("ChooseFBX", "Choose FBX", ".fbx", ".", 1, nullptr, ImGuiFileDialogFlags_Modal);
+                }
+                if (ImGui::MenuItem("OBJ")) {
+                    ImGuiFileDialog::Instance()->OpenDialog("ChooseOBJ", "Choose OBJ", ".obj", ".", 1, nullptr, ImGuiFileDialogFlags_Modal);
+                }
+                ImGui::EndMenu();
             }
 
             ImGui::EndMenu();
@@ -599,16 +622,17 @@ void Engine::DrawEditor() {
 		}
 
         float windowWidth = ImGui::GetWindowWidth();
-        float buttonWidth = windowWidth - 65;
+        float buttonWidth = windowWidth - 50;
 
-        std::string name = ICON_FA_CARET_RIGHT" " + entity->m_Name;
+        std::string name = ICON_FA_CUBE" " + entity->m_Name;
         if (ImGui::Button(name.c_str(), ImVec2(buttonWidth, 0))) {
             m_SelectedEntity = entity;
         }
 
         ImGui::SameLine();
         ImGui::PushID(index);
-        if (ImGui::Button(ICON_FA_TRASH, ImVec2(65, 0))) {
+
+        if (ImGui::Button(ICON_FA_TRASH, ImVec2(50, 0))) {
 			m_Entities.erase(m_Entities.begin() + index);
 			delete entity;
 			m_SelectedEntity = nullptr;
@@ -636,8 +660,12 @@ void Engine::DrawEditor() {
     if (m_SelectedEntity != nullptr) {
         ImGui::Text(m_SelectedEntity->m_Name.c_str());
 
-        if (ImGui::CollapsingHeader(ICON_FA_ARROWS_ALT " Transform")) {
+        ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.6f, 0.6f, 0.6f, 0.6f));
+
+        if (ImGui::CollapsingHeader(ICON_FA_ARROWS_ALT " Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
+
             ImGui::BeginGroup();
+            ImGui::PushItemWidth(-FLT_MIN);
             // position
             ImGui::PushID("Position");
             ImGui::Text("Position");
@@ -653,7 +681,6 @@ void Engine::DrawEditor() {
             ImGui::PopID();
 
             m_SelectedEntity->m_Transform.SetRotationEuler(rotation);
-
             // scale
             ImGui::PushID("Scale");
             ImGui::Text("Scale");
@@ -668,16 +695,22 @@ void Engine::DrawEditor() {
 
             ImGui::Separator();
 
+            ImGui::PopItemWidth();
+
             ImGui::EndGroup();
         }
+
+        ImGui::PopStyleColor();
 
         // display components
         ImGui::BeginGroup();
 
+        ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.6f, 0.6f, 0.6f, 0.6f));
+
         for (Component* component : m_SelectedEntity->m_Components) {
             float windowWidth = ImGui::GetWindowWidth();
 
-            if (ImGui::CollapsingHeader(component->GetName().c_str())) {
+            if (ImGui::CollapsingHeader(component->GetName().c_str(), ImGuiTreeNodeFlags_DefaultOpen)) {
                 component->DrawInspector();
                 component->DrawGizmos();
 
@@ -687,6 +720,9 @@ void Engine::DrawEditor() {
             }
             ImGui::Separator();
 		}
+
+        ImGui::PopStyleColor();
+
         ImGui::EndGroup();
 
         // display add component button

@@ -13,6 +13,7 @@
 #include "Entity.h"
 #include "imgui.h"
 #include <fstream>
+#include <sstream>
 
 #include <OpenFBX/ofbx.h>
 
@@ -55,7 +56,7 @@ Bounds Mesh::GetBounds()
     return Bounds(pos, size);
 }
 
-void Mesh::LoadFromFile(std::string path) {
+void Mesh::LoadFromFileFBX(std::string path) {
     std::ifstream file(path, std::ios::binary | std::ios::ate);
     std::streamsize size = file.tellg();
     file.seekg(0, std::ios::beg);
@@ -105,7 +106,7 @@ void Mesh::LoadFromFile(std::string path) {
             inds.push_back(indices[j] + indexOffset);
         }
 
-        indexOffset += vertexCount;
+        //indexOffset += vertexCount;
 
         m_Vertices = verts;
         m_UVs = uv;
@@ -116,6 +117,59 @@ void Mesh::LoadFromFile(std::string path) {
     }
 }
 
+void Mesh::LoadFromFileOBJ(std::string path) {
+    std::ifstream file(path, std::ios::in);
+
+    if (!file.is_open()) {
+		std::cout << "Failed to open file at " << path << std::endl;
+		return;
+	}
+
+    std::vector<glm::vec3> verts;
+    std::vector<glm::vec2> uvs;
+    std::vector<unsigned int> faceIndices;
+
+    std::string line;
+
+    while (std::getline(file, line)) {
+        std::istringstream iss(line);
+        std::string prefix;
+
+        iss >> prefix;
+
+        if (prefix == "v") {
+            glm::vec3 vertex = glm::vec3(0.0f);
+            iss >> vertex.x >> vertex.y >> vertex.z;
+
+            verts.push_back(vertex);
+        }
+        else if (prefix == "vt") {
+            glm::vec2 uv = glm::vec2(0.0f);
+            iss >> uv.x >> uv.y;
+
+            uvs.push_back(uv);
+        }
+        else if (prefix == "f") {
+            unsigned int inds[3];
+
+            iss >> inds[0] >> inds[1] >> inds[2];
+
+            faceIndices.push_back(inds[0] - 1);
+            faceIndices.push_back(inds[1] - 1);
+            faceIndices.push_back(inds[2] - 1);
+        }
+    }
+
+    file.close();
+
+    m_Vertices = verts;
+    m_UVs = uvs;
+    m_Indices = faceIndices;
+
+    RecalculateNormals();
+    UpdateBuffers();
+}
+
 void Mesh::RecalculateNormals() {
     m_Normals.clear();
 
@@ -123,6 +177,11 @@ void Mesh::RecalculateNormals() {
         unsigned int triangle0 = m_Indices[i];
         unsigned int triangle1 = m_Indices[i + 1];
         unsigned int triangle2 = m_Indices[i + 2];
+
+        if (m_Vertices.size() <= triangle0 || m_Vertices.size() <= triangle1 || m_Vertices.size() <= triangle2) {
+			std::cout << "Invalid vertex index" << std::endl;
+            continue;
+		}
 
         glm::vec3 v0 = m_Vertices[triangle0];
         glm::vec3 v1 = m_Vertices[triangle1];
@@ -403,30 +462,122 @@ std::string Mesh::GetName() {
 }
 
 void Mesh::DrawInspector() {
+
+    if (ImGui::BeginTable("Mesh Basic", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable)) {
+        ImGui::TableSetupColumn("Property", ImGuiTableColumnFlags_WidthFixed);
+        ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
+
+        ImGui::TableHeadersRow();
+
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0);
+        ImGui::Text("Vertices");
+        ImGui::TableSetColumnIndex(1);
+        ImGui::Text("%d", m_Vertices.size());
+
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0);
+        ImGui::Text("UVs");
+        ImGui::TableSetColumnIndex(1);
+        ImGui::Text("%d", m_UVs.size());
+
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0);
+        ImGui::Text("Indices");
+        ImGui::TableSetColumnIndex(1);
+        ImGui::Text("%d", m_Indices.size());
+
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0);
+        ImGui::Text("Normals");
+        ImGui::TableSetColumnIndex(1);
+        ImGui::Text("%d", m_Normals.size());
+
+		ImGui::EndTable();
+	}
+
+    if (ImGui::BeginTable("Bounds", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable)) {
+        Bounds bounds = GetBounds();
+
+        ImGui::TableSetupColumn("Property", ImGuiTableColumnFlags_WidthFixed);
+        ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
+
+        ImGui::TableHeadersRow();
+
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0);
+        ImGui::Text("Min");
+        ImGui::TableSetColumnIndex(1);
+        ImGui::Text("%f, %f, %f", bounds.GetMin().x, bounds.GetMin().y, bounds.GetMin().z);
+
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0);
+        ImGui::Text("Max");
+        ImGui::TableSetColumnIndex(1);
+        ImGui::Text("%f, %f, %f", bounds.GetMax().x, bounds.GetMax().y, bounds.GetMax().z);
+
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0);
+        ImGui::Text("Center");
+        ImGui::TableSetColumnIndex(1);
+        ImGui::Text("%f, %f, %f", bounds.GetCenter().x, bounds.GetCenter().y, bounds.GetCenter().z);
+
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0);
+        ImGui::Text("Size");
+        ImGui::TableSetColumnIndex(1);
+        ImGui::Text("%f, %f, %f", bounds.GetSize().x, bounds.GetSize().y, bounds.GetSize().z);
+
+        ImGui::EndTable();
+    }
+
+    /*ImGui::TableHeader("Basic Info");
+
     ImGui::Text("Vertices: %d", m_Vertices.size());
+    ImGui::TableNextRow();
     ImGui::Text("UVs: %d", m_UVs.size());
+    ImGui::TableNextRow();
     ImGui::Text("Indices: %d", m_Indices.size());
+    ImGui::TableNextRow();
 
     ImGui::Text("Normals: %d", m_Normals.size());
 
+    ImGui::TableNextColumn();
+    ImGui::TableHeader("Bounds");
+
     Bounds bounds = GetBounds();
 
-    ImGui::Text("Bounds");
     ImGui::Text("Min: %f, %f, %f", bounds.GetMin().x, bounds.GetMin().y, bounds.GetMin().z);
+    ImGui::TableNextRow();
     ImGui::Text("Max: %f, %f, %f", bounds.GetMax().x, bounds.GetMax().y, bounds.GetMax().z);
+    ImGui::TableNextRow();
     ImGui::Text("Center: %f, %f, %f", bounds.GetCenter().x, bounds.GetCenter().y, bounds.GetCenter().z);
-    ImGui::Text("Size: %f, %f, %f", bounds.GetSize().x, bounds.GetSize().y, bounds.GetSize().z);
+    ImGui::TableNextRow();
+    ImGui::Text("Size: %f, %f, %f", bounds.GetSize().x, bounds.GetSize().y, bounds.GetSize().z);*/
 
-    if (ImGui::Button(ICON_FA_CUBE" Create Cube")) {
+    ImGui::Columns(3, "Mesh Columns", false);
+
+    ImGui::Separator();
+
+    if (ImGui::Button(ICON_FA_CUBE" Create Cube", ImVec2(-FLT_MIN, 0))) {
 		CreateCube(glm::vec3(1, 1, 1));
 	}
-    if (ImGui::Button(ICON_FA_CIRCLE" Create Sphere")) {
+    ImGui::NextColumn();
+    if (ImGui::Button(ICON_FA_CIRCLE" Create Sphere", ImVec2(-FLT_MIN, 0))) {
 		CreateSphere(1, 32, 32);
 	}
-
-    if (ImGui::Button(ICON_FA_SQUARE" Create Plane")) {
+    ImGui::NextColumn();
+    if (ImGui::Button(ICON_FA_SQUARE" Create Plane", ImVec2(-FLT_MIN, 0))) {
 		CreatePlane(glm::vec2(1, 1));
 	}
+    ImGui::Separator();
+
+    ImGui::Columns(1);
+
+    if (ImGui::Button(ICON_FA_CALCULATOR" Recalculate Normals", ImVec2(-FLT_MIN, 0))) {
+        RecalculateNormals();
+        UpdateBuffers();
+    }
 }
 
 ComponentType Mesh::GetType() {
