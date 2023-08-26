@@ -542,6 +542,10 @@
     <ClInclude Include="src\Tools.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Debug\shaders\default\fragment.glsl" />
+    <None Include="Debug\shaders\default\vertex.glsl" />
+    <None Include="Debug\shaders\shadows\fragment.glsl" />
+    <None Include="Debug\shaders\shadows\vertex.glsl" />
     <None Include="Dependencies\GLEW\bin\Release\Win32\glew32.dll" />
     <None Include="Dependencies\GLEW\bin\Release\Win32\glewinfo.exe" />
     <None Include="Dependencies\GLEW\bin\Release\Win32\visualinfo.exe" />
