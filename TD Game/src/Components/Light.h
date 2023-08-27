@@ -17,10 +17,5 @@ class Light : public Component {
 	std::string GetName() override;
 	void DrawInspector() override;
 	void DrawGizmos() override;
-
-	void Save(std::ostream& os) override;
-	void Load(std::istream& is) override;
-
-	ComponentType GetType() override;
 };
 

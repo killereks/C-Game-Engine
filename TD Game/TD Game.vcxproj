@@ -112,14 +112,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);GLEW_STATIC</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\glm;$(SolutionDir)imgui;$(SolutionDir)Dependencies;$(SolutionDir)src;$(SolutionDir)src\components;$(SolutionDir)Dependencies\GL;$(SolutionDir)Dependencies\OpenFBX;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\glm;$(SolutionDir)imgui;$(SolutionDir)Dependencies;$(SolutionDir)src;$(SolutionDir)src\components;$(SolutionDir)Dependencies\GL;$(SolutionDir)Dependencies\OpenFBX;$(SolutionDir)\Dependencies\yaml;$(SolutionDir)\Dependencies\yaml\include;$(SolutionDir)\Dependencies\yaml\src;$(SolutionDir)\Dependencies\yaml\images;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\GLFW\lib-vc2022;$(SolutionDir)Dependencies\GLEW\lib\Release\x64;$(SolutionDir)Dependencies\GL;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;glew32s.lib;freeglut.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\GLFW\lib-vc2022;$(SolutionDir)Dependencies\GLEW\lib\Release\x64;$(SolutionDir)Dependencies\GL;$(SolutionDir)Dependencies\yaml;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;glew32s.lib;freeglut.lib;yaml-cppd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -143,6 +143,38 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Dependencies\yaml\src\binary.cpp" />
+    <ClCompile Include="Dependencies\yaml\src\contrib\graphbuilder.cpp" />
+    <ClCompile Include="Dependencies\yaml\src\contrib\graphbuilderadapter.cpp" />
+    <ClCompile Include="Dependencies\yaml\src\convert.cpp" />
+    <ClCompile Include="Dependencies\yaml\src\depthguard.cpp" />
+    <ClCompile Include="Dependencies\yaml\src\directives.cpp" />
+    <ClCompile Include="Dependencies\yaml\src\emit.cpp" />
+    <ClCompile Include="Dependencies\yaml\src\emitfromevents.cpp" />
+    <ClCompile Include="Dependencies\yaml\src\emitter.cpp" />
+    <ClCompile Include="Dependencies\yaml\src\emitterstate.cpp" />
+    <ClCompile Include="Dependencies\yaml\src\emitterutils.cpp" />
+    <ClCompile Include="Dependencies\yaml\src\exceptions.cpp" />
+    <ClCompile Include="Dependencies\yaml\src\exp.cpp" />
+    <ClCompile Include="Dependencies\yaml\src\memory.cpp" />
+    <ClCompile Include="Dependencies\yaml\src\node.cpp" />
+    <ClCompile Include="Dependencies\yaml\src\nodebuilder.cpp" />
+    <ClCompile Include="Dependencies\yaml\src\nodeevents.cpp" />
+    <ClCompile Include="Dependencies\yaml\src\node_data.cpp" />
+    <ClCompile Include="Dependencies\yaml\src\null.cpp" />
+    <ClCompile Include="Dependencies\yaml\src\ostream_wrapper.cpp" />
+    <ClCompile Include="Dependencies\yaml\src\parse.cpp" />
+    <ClCompile Include="Dependencies\yaml\src\parser.cpp" />
+    <ClCompile Include="Dependencies\yaml\src\regex_yaml.cpp" />
+    <ClCompile Include="Dependencies\yaml\src\scanner.cpp" />
+    <ClCompile Include="Dependencies\yaml\src\scanscalar.cpp" />
+    <ClCompile Include="Dependencies\yaml\src\scantag.cpp" />
+    <ClCompile Include="Dependencies\yaml\src\scantoken.cpp" />
+    <ClCompile Include="Dependencies\yaml\src\simplekey.cpp" />
+    <ClCompile Include="Dependencies\yaml\src\singledocparser.cpp" />
+    <ClCompile Include="Dependencies\yaml\src\stream.cpp" />
+    <ClCompile Include="Dependencies\yaml\src\tag.cpp" />
+    <ClCompile Include="src\Material.cpp" />
     <ClCompile Include="src\LightMapper.cpp" />
     <ClCompile Include="src\Physics.cpp" />
     <ClCompile Include="src\Ray.cpp" />
@@ -174,6 +206,7 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Shader.cpp" />
     <ClCompile Include="src\Tools.cpp" />
+    <ClCompile Include="src\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Dependencies\Icons\IconsCodicons.h" />
@@ -190,6 +223,7 @@
     <ClInclude Include="Dependencies\Icons\IconsMaterialDesign.h" />
     <ClInclude Include="Dependencies\Icons\IconsMaterialDesignIcons.h" />
     <ClInclude Include="Dependencies\images\stb_image.h" />
+    <ClInclude Include="Dependencies\OBJ_Loader.h" />
     <ClInclude Include="Dependencies\yaml\include\contrib\anchordict.h" />
     <ClInclude Include="Dependencies\yaml\include\contrib\graphbuilder.h" />
     <ClInclude Include="Dependencies\yaml\include\node\convert.h" />
@@ -208,8 +242,68 @@
     <ClInclude Include="Dependencies\yaml\include\node\parse.h" />
     <ClInclude Include="Dependencies\yaml\include\node\ptr.h" />
     <ClInclude Include="Dependencies\yaml\include\node\type.h" />
+    <ClInclude Include="Dependencies\yaml\include\yaml-cpp\anchor.h" />
+    <ClInclude Include="Dependencies\yaml\include\yaml-cpp\binary.h" />
+    <ClInclude Include="Dependencies\yaml\include\yaml-cpp\contrib\anchordict.h" />
+    <ClInclude Include="Dependencies\yaml\include\yaml-cpp\contrib\graphbuilder.h" />
+    <ClInclude Include="Dependencies\yaml\include\yaml-cpp\depthguard.h" />
+    <ClInclude Include="Dependencies\yaml\include\yaml-cpp\dll.h" />
+    <ClInclude Include="Dependencies\yaml\include\yaml-cpp\emitfromevents.h" />
+    <ClInclude Include="Dependencies\yaml\include\yaml-cpp\emitter.h" />
+    <ClInclude Include="Dependencies\yaml\include\yaml-cpp\emitterdef.h" />
+    <ClInclude Include="Dependencies\yaml\include\yaml-cpp\emittermanip.h" />
+    <ClInclude Include="Dependencies\yaml\include\yaml-cpp\emitterstyle.h" />
+    <ClInclude Include="Dependencies\yaml\include\yaml-cpp\eventhandler.h" />
+    <ClInclude Include="Dependencies\yaml\include\yaml-cpp\exceptions.h" />
+    <ClInclude Include="Dependencies\yaml\include\yaml-cpp\mark.h" />
+    <ClInclude Include="Dependencies\yaml\include\yaml-cpp\node\convert.h" />
+    <ClInclude Include="Dependencies\yaml\include\yaml-cpp\node\detail\impl.h" />
+    <ClInclude Include="Dependencies\yaml\include\yaml-cpp\node\detail\iterator.h" />
+    <ClInclude Include="Dependencies\yaml\include\yaml-cpp\node\detail\iterator_fwd.h" />
+    <ClInclude Include="Dependencies\yaml\include\yaml-cpp\node\detail\memory.h" />
+    <ClInclude Include="Dependencies\yaml\include\yaml-cpp\node\detail\node.h" />
+    <ClInclude Include="Dependencies\yaml\include\yaml-cpp\node\detail\node_data.h" />
+    <ClInclude Include="Dependencies\yaml\include\yaml-cpp\node\detail\node_iterator.h" />
+    <ClInclude Include="Dependencies\yaml\include\yaml-cpp\node\detail\node_ref.h" />
+    <ClInclude Include="Dependencies\yaml\include\yaml-cpp\node\emit.h" />
+    <ClInclude Include="Dependencies\yaml\include\yaml-cpp\node\impl.h" />
+    <ClInclude Include="Dependencies\yaml\include\yaml-cpp\node\iterator.h" />
+    <ClInclude Include="Dependencies\yaml\include\yaml-cpp\node\node.h" />
+    <ClInclude Include="Dependencies\yaml\include\yaml-cpp\node\parse.h" />
+    <ClInclude Include="Dependencies\yaml\include\yaml-cpp\node\ptr.h" />
+    <ClInclude Include="Dependencies\yaml\include\yaml-cpp\node\type.h" />
+    <ClInclude Include="Dependencies\yaml\include\yaml-cpp\noexcept.h" />
+    <ClInclude Include="Dependencies\yaml\include\yaml-cpp\null.h" />
+    <ClInclude Include="Dependencies\yaml\include\yaml-cpp\ostream_wrapper.h" />
+    <ClInclude Include="Dependencies\yaml\include\yaml-cpp\parser.h" />
+    <ClInclude Include="Dependencies\yaml\include\yaml-cpp\stlemitter.h" />
+    <ClInclude Include="Dependencies\yaml\include\yaml-cpp\traits.h" />
+    <ClInclude Include="Dependencies\yaml\include\yaml-cpp\yaml.h" />
+    <ClInclude Include="Dependencies\yaml\src\collectionstack.h" />
+    <ClInclude Include="Dependencies\yaml\src\contrib\graphbuilderadapter.h" />
+    <ClInclude Include="Dependencies\yaml\src\directives.h" />
+    <ClInclude Include="Dependencies\yaml\src\emitterstate.h" />
+    <ClInclude Include="Dependencies\yaml\src\emitterutils.h" />
+    <ClInclude Include="Dependencies\yaml\src\exp.h" />
+    <ClInclude Include="Dependencies\yaml\src\indentation.h" />
+    <ClInclude Include="Dependencies\yaml\src\nodebuilder.h" />
+    <ClInclude Include="Dependencies\yaml\src\nodeevents.h" />
+    <ClInclude Include="Dependencies\yaml\src\ptr_vector.h" />
+    <ClInclude Include="Dependencies\yaml\src\regeximpl.h" />
+    <ClInclude Include="Dependencies\yaml\src\regex_yaml.h" />
     <ClInclude Include="Dependencies\yaml\src\ryml.hpp" />
     <ClInclude Include="Dependencies\yaml\src\ryml_std.hpp" />
+    <ClInclude Include="Dependencies\yaml\src\scanner.h" />
+    <ClInclude Include="Dependencies\yaml\src\scanscalar.h" />
+    <ClInclude Include="Dependencies\yaml\src\scantag.h" />
+    <ClInclude Include="Dependencies\yaml\src\setting.h" />
+    <ClInclude Include="Dependencies\yaml\src\singledocparser.h" />
+    <ClInclude Include="Dependencies\yaml\src\stream.h" />
+    <ClInclude Include="Dependencies\yaml\src\streamcharsource.h" />
+    <ClInclude Include="Dependencies\yaml\src\stringsource.h" />
+    <ClInclude Include="Dependencies\yaml\src\tag.h" />
+    <ClInclude Include="Dependencies\yaml\src\token.h" />
+    <ClInclude Include="src\Material.h" />
     <ClInclude Include="src\LightMapper.h" />
     <ClInclude Include="src\Physics.h" />
     <ClInclude Include="src\Ray.h" />
@@ -560,6 +654,7 @@
     <ClInclude Include="src\Components\Entity.h" />
     <ClInclude Include="src\Shader.h" />
     <ClInclude Include="src\Tools.h" />
+    <ClInclude Include="src\Texture.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Dependencies\GLEW\bin\Release\Win32\glew32.dll" />
@@ -717,14 +812,13 @@
     <None Include="src\shaders\default\vertex.glsl" />
   </ItemGroup>
   <ItemGroup>
-    <Library Include="Dependencies\GLEW\lib\Release\Win32\glew32.lib" />
-    <Library Include="Dependencies\GLEW\lib\Release\Win32\glew32s.lib" />
     <Library Include="Dependencies\GLEW\lib\Release\x64\glew32.lib" />
     <Library Include="Dependencies\GLEW\lib\Release\x64\glew32s.lib" />
     <Library Include="Dependencies\GLFW\lib-vc2022\glfw3.lib" />
     <Library Include="Dependencies\GLFW\lib-vc2022\glfw3dll.lib" />
     <Library Include="Dependencies\GLFW\lib-vc2022\glfw3_mt.lib" />
     <Library Include="Dependencies\GL\freeglut.lib" />
+    <Library Include="Dependencies\yaml\yaml-cppd.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

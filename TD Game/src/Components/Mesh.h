@@ -21,15 +21,27 @@ class Mesh : public Component {
     std::vector<glm::vec3> m_Normals;
     std::vector<unsigned int> m_Indices;
 
+    std::vector<glm::vec3> m_Tangents;
+    std::vector<glm::vec3> m_Bitangents;
+
     unsigned int m_VAO; // Vertex Array Object
     unsigned int m_VBO; // Vertex Buffer Object
     unsigned int m_UBO; // UV Buffer Object
     unsigned int m_IBO; // Index Buffer Object
     unsigned int m_NBO; // Normal Buffer Object
 
+    unsigned int m_TBO; // Tangent Buffer Object
+    unsigned int m_BBO; // Bitangent Buffer Object
+
     Bounds* m_Bounds;
 
     public:
+
+    bool m_CastShadows = true;
+
+    std::string filePath;
+
+    std::string defaultObject;
 
     Mesh(std::vector<glm::vec3> vertices, std::vector<glm::vec2> uvs, std::vector<unsigned int> indices);
     Mesh();
@@ -52,15 +64,11 @@ class Mesh : public Component {
     void DrawInspector() override;
     void DrawGizmos() override;
 
-    void Save(std::ostream& os) override;
-    void Load(std::istream& is) override;
-
-    ComponentType GetType() override;
-
     void SetupRender(Camera* camera, Shader* shader);
 
     void RecalculateNormals();
     void UpdateBuffers();
+    void CalculateTBN();
 };
 
 

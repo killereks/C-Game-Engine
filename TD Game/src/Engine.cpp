@@ -11,6 +11,8 @@
 
 #include "Tools.h"
 
+#include "yaml-cpp/yaml.h"
+
 #include <string>
 
 #include <GL/glew.h>
@@ -334,15 +336,216 @@ Engine::~Engine() {
 	}
 }
 
+YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec3& v) {
+    out << YAML::Flow;
+    out << YAML::BeginSeq << v.x << v.y << v.z << YAML::EndSeq;
+    return out;
+}
+
+YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec4& v) {
+	out << YAML::Flow;
+	out << YAML::BeginSeq << v.x << v.y << v.z << v.w << YAML::EndSeq;
+	return out;
+}
+
+YAML::Emitter& operator<<(YAML::Emitter& out, const glm::quat& q) {
+	out << YAML::Flow;
+	out << YAML::BeginSeq << q.x << q.y << q.z << q.w << YAML::EndSeq;
+	return out;
+}
+
+namespace YAML {
+    template<>
+    struct convert<glm::vec3> {
+        static Node encode(const glm::vec3& rhs) {
+            Node node;
+            node.push_back(rhs.x);
+            node.push_back(rhs.y);
+            node.push_back(rhs.z);
+            return node;
+        }
+
+        static bool decode(const Node& node, glm::vec3& rhs) {
+            if (!node.IsSequence() || node.size() != 3) {
+                return false;
+            }
+
+            rhs.x = node[0].as<float>();
+            rhs.y = node[1].as<float>();
+            rhs.z = node[2].as<float>();
+
+            return true;
+        }
+    };
+
+    template<>
+    struct convert<glm::vec4> {
+        static Node encode(const glm::vec4& rhs) {
+            Node node;
+            node.push_back(rhs.x);
+            node.push_back(rhs.y);
+            node.push_back(rhs.z);
+            node.push_back(rhs.w);
+            return node;
+        }
+
+        static bool decode(const Node& node, glm::vec4& rhs) {
+            if (!node.IsSequence() || node.size() != 4) {
+                return false;
+            }
+
+            rhs.x = node[0].as<float>();
+            rhs.y = node[1].as<float>();
+            rhs.z = node[2].as<float>();
+            rhs.w = node[3].as<float>();
+
+            return true;
+        }
+    };
+
+    template<>
+    struct convert<glm::quat> {
+        static Node encode(const glm::quat& rhs) {
+            Node node;
+            node.push_back(rhs.x);
+            node.push_back(rhs.y);
+            node.push_back(rhs.z);
+            node.push_back(rhs.w);
+            return node;
+        }
+
+        static bool decode(const Node& node, glm::quat& rhs) {
+            if (!node.IsSequence() || node.size() != 4) {
+                return false;
+            }
+
+            rhs.x = node[0].as<float>();
+            rhs.y = node[1].as<float>();
+            rhs.z = node[2].as<float>();
+            rhs.w = node[3].as<float>();
+
+            return true;
+        }
+    };
+}
+
+static void SerializeEntity(YAML::Emitter& out, Entity* ent) {
+    out << YAML::BeginMap;
+    out << YAML::Key << "Entity" << YAML::Value << ent->m_Name;
+
+    // transform
+    out << YAML::Key << "Transform";
+    out << YAML::BeginMap;
+
+    out << YAML::Key << "Position" << YAML::Value << ent->m_Transform.m_Position;
+    out << YAML::Key << "Rotation" << YAML::Value << ent->m_Transform.m_Rotation;
+    out << YAML::Key << "Scale" << YAML::Value << ent->m_Transform.m_Scale;
+
+    out << YAML::EndMap;
+
+    if (ent->HasComponent<Mesh>()) {
+        out << YAML::Key << "Mesh";
+        out << YAML::BeginMap;
+
+        Mesh* mesh = ent->GetComponent<Mesh>();
+        out << YAML::Key << "File" << YAML::Value << mesh->filePath;
+        out << YAML::Key << "CastShadows" << YAML::Value << mesh->m_CastShadows;
+
+        out << YAML::EndMap;
+    }
+
+    if (ent->HasComponent<Light>()) {
+        out << YAML::Key << "Light";
+        out << YAML::BeginMap;
+
+        Light* light = ent->GetComponent<Light>();
+        out << YAML::Key << "Intensity" << YAML::Value << light->m_Intensity;
+        out << YAML::Key << "Color" << YAML::Value << light->m_Color;
+        out << YAML::Key << "Range" << YAML::Value << light->m_Range;
+
+        out << YAML::EndMap;
+    }
+
+    out << YAML::EndMap;
+}
+
 void Engine::SaveScene(std::string path)
 {
+    YAML::Emitter out;
 
+    out << YAML::BeginMap;
+    out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
+
+    for (Entity* ent : m_Entities){
+        SerializeEntity(out, ent);
+    }
+
+    out << YAML::EndSeq;
+    out << YAML::EndMap;
+
+    std::ofstream fout(path);
+    fout << out.c_str();
 }
 
 void Engine::LoadScene(std::string path)
 {
+    std::ifstream stream(path);
+    std::stringstream strStream;
+    strStream << stream.rdbuf();
 
+    YAML::Node data = YAML::Load(strStream.str());
+    // check if valid
+    if (!data["Entities"]) {
+        std::cout << "Invalid Scene File" << std::endl;
+        return;
+    }
 
+    m_SelectedEntity = nullptr;
+
+    // clear current scene
+    for (Entity* ent : m_Entities) {
+		delete ent;
+	}
+
+    m_Entities.clear();
+
+    // load entities
+    YAML::Node entities = data["Entities"];
+    if (entities) {
+        for (auto entityData : entities) {
+            std::string name = entityData["Entity"].as<std::string>();
+            Entity* ent = new Entity(name);
+
+            // transform
+            YAML::Node transform = entityData["Transform"];
+            if (transform) {
+				ent->m_Transform.m_Position = transform["Position"].as<glm::vec3>();
+				ent->m_Transform.m_Rotation = transform["Rotation"].as<glm::quat>();
+				ent->m_Transform.m_Scale = transform["Scale"].as<glm::vec3>();
+			}
+
+            // light
+			YAML::Node light = entityData["Light"];
+            if (light) {
+				Light* lightComponent = ent->AddComponent<Light>();
+				lightComponent->m_Intensity = light["Intensity"].as<float>();
+				lightComponent->m_Color = light["Color"].as<glm::vec3>();
+				lightComponent->m_Range = light["Range"].as<float>();
+			}
+
+            // mesh
+            YAML::Node mesh = entityData["Mesh"];
+            if (mesh) {
+                Mesh* meshComponent = ent->AddComponent<Mesh>();
+                meshComponent->filePath = mesh["File"].as<std::string>();
+                meshComponent->m_CastShadows = mesh["CastShadows"].as<bool>();
+
+                meshComponent->LoadFromFileOBJ(meshComponent->filePath);
+            }
+
+			m_Entities.push_back(ent);
+        }
+    }
 }
 
 void Engine::Awake() {
@@ -433,6 +636,8 @@ void Engine::Render() {
             // render entity
             Mesh* mesh = nullptr;
             if (entity->TryGetComponent<Mesh>(mesh)) {
+                if (!mesh->m_CastShadows) continue;
+
                 _lightShader->SetMat4("model", mesh->m_Owner->m_Transform.GetModelMatrix());
                 mesh->Draw();
             }
@@ -515,11 +720,8 @@ void Engine::DrawEditor() {
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu(ICON_FA_FILE" File")) {
             if (ImGui::MenuItem("Save Scene")) {
-                SaveScene(m_ProjectPath + "/scene.dat");
+                SaveScene(m_ProjectPath + "/main.scene");
             }
-            if (ImGui::MenuItem("Load Scene")) {
-                LoadScene(m_ProjectPath + "/scene.dat");
-			}
             if (ImGui::BeginMenu("Open")) {
                 if (ImGui::MenuItem("FBX")) {
                     ImGuiFileDialog::Instance()->OpenDialog("ChooseFBX", "Choose FBX", ".fbx", ".", 1, nullptr, ImGuiFileDialogFlags_Modal);
@@ -747,8 +949,18 @@ void Engine::DrawEditor() {
         }
         else {
             std::string name = p.path().filename().string();
-            if (ImGui::Button(name.c_str(), ImVec2(-FLT_MIN, 0))) {
+            std::string ext = p.path().extension().string();
 
+            if (ext == ".scene") {
+                if (ImGui::Button((ICON_FA_CUBES" " + name).c_str(), ImVec2(-FLT_MIN, 0))) {
+					LoadScene(p.path().string());
+                }
+            }
+            else if (ext == ".png" || ext == ".jpg") {
+				if (ImGui::Button((ICON_FA_IMAGE" " + name).c_str(), ImVec2(-FLT_MIN, 0))) {}
+            }
+            else {
+                ImGui::Text(name.c_str());
             }
         }
 	}

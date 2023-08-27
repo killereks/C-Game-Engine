@@ -23,9 +23,6 @@ public:
 
     std::vector<Component*> m_Components;
 
-    void Save(std::ostream& os);
-    void Load(std::istream& is);
-
     template<typename T>
     T* AddComponent() {
         static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
@@ -73,6 +70,19 @@ public:
                 return;
             }
         }
+    }
+
+    template<typename T>
+    bool HasComponent() {
+        static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
+
+        for (Component* comp : m_Components) {
+            if (T* result = dynamic_cast<T*>(comp)) {
+				return true;
+			}
+		}
+
+        return false;
     }
 
     std::string m_Name;

@@ -30,20 +30,3 @@ void Light::DrawInspector() {
 void Light::DrawGizmos() {
 
 }
-
-void Light::Save(std::ostream& os) {
-	os << m_Color.x << " " << m_Color.y << " " << m_Color.z << std::endl;
-	os << m_Intensity << std::endl;
-	os << m_Range << std::endl;
-}
-
-void Light::Load(std::istream& is) {
-	is >> m_Color.x >> m_Color.y >> m_Color.z;
-	is >> m_Intensity;
-	is >> m_Range;
-}
-
-ComponentType Light::GetType()
-{
-	return ComponentType::Light;
-}

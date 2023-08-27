@@ -7,6 +7,7 @@
 #include "Components/Transform.h"
 #include "Components/Entity.h"
 #include "Camera.h"
+#include "Texture.h"
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -43,8 +44,6 @@ private:
     float cameraX = 0, cameraY = 0;
 
     float lastFrameTime;
-
-
 
     GLFWwindow* window;
 

@@ -16,6 +16,7 @@
 #include <sstream>
 
 #include <OpenFBX/ofbx.h>
+#include "OBJ_Loader.h"
 
 #include "Icons/IconsFontAwesome5.h"
 
@@ -34,6 +35,11 @@ Mesh::Mesh() {
     glGenBuffers(1, &m_NBO);
     glGenBuffers(1, &m_UBO);
 
+    glGenBuffers(1, &m_TBO);
+    glGenBuffers(1, &m_BBO);
+
+    m_CastShadows = true;
+
     m_Bounds = new Bounds();
 }
 
@@ -43,6 +49,9 @@ Mesh::~Mesh() {
     glDeleteBuffers(1, &m_IBO);
     glDeleteBuffers(1, &m_NBO);
     glDeleteBuffers(1, &m_UBO);
+
+    glDeleteBuffers(1, &m_TBO);
+    glDeleteBuffers(1, &m_BBO);
 
     delete m_Bounds;
 }
@@ -71,6 +80,8 @@ void Mesh::LoadFromFileFBX(std::string path) {
         std::cout << "Failed to load FBX file at " << path << std::endl;
         return;
     }
+
+    this->filePath = path;
 
     std::vector<glm::vec3> verts;
     std::vector<glm::vec2> uv;
@@ -118,55 +129,32 @@ void Mesh::LoadFromFileFBX(std::string path) {
 }
 
 void Mesh::LoadFromFileOBJ(std::string path) {
-    std::ifstream file(path, std::ios::in);
+    objl::Loader loader;
 
-    if (!file.is_open()) {
-		std::cout << "Failed to open file at " << path << std::endl;
-		return;
+    this->filePath = path;
+
+    loader.LoadFile(path);
+
+    objl::Mesh mesh = loader.LoadedMeshes[0];
+
+    m_Vertices.clear();
+    m_UVs.clear();
+    m_Normals.clear();
+    m_Indices.clear();
+    
+    for (int i = 0; i < mesh.Vertices.size(); i++) {
+		m_Vertices.push_back(glm::vec3(mesh.Vertices[i].Position.X, mesh.Vertices[i].Position.Y, mesh.Vertices[i].Position.Z));
+		m_UVs.push_back(glm::vec2(mesh.Vertices[i].TextureCoordinate.X, mesh.Vertices[i].TextureCoordinate.Y));
+		m_Normals.push_back(glm::vec3(mesh.Vertices[i].Normal.X, mesh.Vertices[i].Normal.Y, mesh.Vertices[i].Normal.Z));
 	}
 
-    std::vector<glm::vec3> verts;
-    std::vector<glm::vec2> uvs;
-    std::vector<unsigned int> faceIndices;
-
-    std::string line;
-
-    while (std::getline(file, line)) {
-        std::istringstream iss(line);
-        std::string prefix;
-
-        iss >> prefix;
-
-        if (prefix == "v") {
-            glm::vec3 vertex = glm::vec3(0.0f);
-            iss >> vertex.x >> vertex.y >> vertex.z;
-
-            verts.push_back(vertex);
-        }
-        else if (prefix == "vt") {
-            glm::vec2 uv = glm::vec2(0.0f);
-            iss >> uv.x >> uv.y;
-
-            uvs.push_back(uv);
-        }
-        else if (prefix == "f") {
-            unsigned int inds[3];
-
-            iss >> inds[0] >> inds[1] >> inds[2];
-
-            faceIndices.push_back(inds[0] - 1);
-            faceIndices.push_back(inds[1] - 1);
-            faceIndices.push_back(inds[2] - 1);
-        }
+    for (int i = 0; i < mesh.Indices.size(); i++) {
+        m_Indices.push_back(mesh.Indices[i]);
     }
 
-    file.close();
-
-    m_Vertices = verts;
-    m_UVs = uvs;
-    m_Indices = faceIndices;
-
-    RecalculateNormals();
+    if (m_Normals.size() == 0) {
+		RecalculateNormals();
+	}
     UpdateBuffers();
 }
 
@@ -192,6 +180,7 @@ void Mesh::RecalculateNormals() {
         m_Normals.push_back(normal);
     }
 
+    CalculateTBN();
     UpdateBuffers();
 }
 
@@ -326,6 +315,7 @@ void Mesh::CreatePlane(glm::vec2 size) {
 
 // binds buffers, and updates the information
 void Mesh::UpdateBuffers() {
+
     std::cout << "Vertices length: " << m_Vertices.size() << "\n";
 
     if (m_Vertices.size() > 0) {
@@ -358,6 +348,21 @@ void Mesh::UpdateBuffers() {
         glBufferData(GL_ARRAY_BUFFER, m_Normals.size() * sizeof(glm::vec3), &m_Normals[0], GL_STATIC_DRAW);
     }
 
+    std::cout << "Tangents length: " << m_Tangents.size() << "\n";
+
+    if (m_Tangents.size() > 0) {
+		// Tangents
+		glBindBuffer(GL_ARRAY_BUFFER, m_TBO);
+		glBufferData(GL_ARRAY_BUFFER, m_Tangents.size() * sizeof(glm::vec3), &m_Tangents[0], GL_STATIC_DRAW);
+	}
+
+    std::cout << "Bitangents length: " << m_Bitangents.size() << "\n";
+
+    if (m_Bitangents.size() > 0) {
+        glBindBuffer(GL_ARRAY_BUFFER, m_BBO);
+        glBufferData(GL_ARRAY_BUFFER, m_Bitangents.size() * sizeof(glm::vec3), &m_Bitangents[0], GL_STATIC_DRAW);
+    }
+
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -369,62 +374,45 @@ void Mesh::UpdateBuffers() {
     }
 }
 
+void Mesh::CalculateTBN()
+{
+    // recalculate tangents and bitangents
+    m_Tangents.clear();
+    m_Bitangents.clear();
+
+    std::cout << "Calculating TBN with " << m_Vertices.size() << " vertices\n";
+
+    for (int i = 0; i < m_Indices.size()-2; i += 3) {
+        glm::vec3 vertex1 = m_Vertices[m_Indices[i]];
+        glm::vec3 vertex2 = m_Vertices[m_Indices[i + 1]];
+        glm::vec3 vertex3 = m_Vertices[m_Indices[i + 2]];
+
+        glm::vec2 uv1 = m_UVs[m_Indices[i]];
+        glm::vec2 uv2 = m_UVs[m_Indices[i + 1]];
+        glm::vec2 uv3 = m_UVs[m_Indices[i + 2]];
+
+        glm::vec3 deltaPos1 = vertex2 - vertex1;
+        glm::vec3 deltaPos2 = vertex3 - vertex1;
+
+        glm::vec2 deltaUV1 = uv2 - uv1;
+        glm::vec2 deltaUV2 = uv3 - uv1;
+
+        float r = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
+        glm::vec3 tangent = (deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y) * r;
+        glm::vec3 bitangent = (deltaPos2 * deltaUV1.x - deltaPos1 * deltaUV2.x) * r;
+
+        tangent = glm::normalize(tangent);
+        bitangent = glm::normalize(bitangent);
+
+        for (int j = 0; j < 3; j++) {
+			m_Tangents.push_back(tangent);
+			m_Bitangents.push_back(bitangent);
+		}
+    }
+}
+
 void Mesh::DrawGizmos() {
 
-}
-
-void Mesh::Save(std::ostream& os)
-{
-    os << m_Vertices.size() << "\n";
-    for (auto& v : m_Vertices) {
-		os << v.x << " " << v.y << " " << v.z << "\n";
-	}
-
-	os << m_UVs.size() << "\n";
-    for (auto& v : m_UVs) {
-		os << v.x << " " << v.y << "\n";
-	}
-
-	os << m_Indices.size() << "\n";
-    for (auto& v : m_Indices) {
-		os << v << "\n";
-	}
-
-	os << m_Normals.size() << "\n";
-    for (auto& v : m_Normals) {
-		os << v.x << " " << v.y << " " << v.z << "\n";
-	}
-}
-
-void Mesh::Load(std::istream& is)
-{
-	int size;
-	is >> size;
-
-	m_Vertices.resize(size);
-    for (auto& v : m_Vertices) {
-		is >> v.x >> v.y >> v.z;
-	}
-
-	is >> size;
-	m_UVs.resize(size);
-    for (auto& v : m_UVs) {
-		is >> v.x >> v.y;
-	}
-
-	is >> size;
-	m_Indices.resize(size);
-    for (auto& v : m_Indices) {
-		is >> v;
-	}
-
-	is >> size;
-	m_Normals.resize(size);
-    for (auto& v : m_Normals) {
-		is >> v.x >> v.y >> v.z;
-	}
-
-	UpdateBuffers();
 }
 
 void Mesh::SetupRender(Camera* camera, Shader* shader) {
@@ -453,6 +441,18 @@ void Mesh::Draw() {
         glEnableVertexAttribArray(2);
         glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
     }
+
+    if (m_Tangents.size() > 0) {
+        glBindBuffer(GL_ARRAY_BUFFER, m_TBO);
+        glEnableVertexAttribArray(3);
+        glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    }
+
+    if (m_Bitangents.size() > 0) {
+		glBindBuffer(GL_ARRAY_BUFFER, m_BBO);
+		glEnableVertexAttribArray(4);
+		glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+	}
     
     glDrawElements(GL_TRIANGLES, m_Indices.size(), GL_UNSIGNED_INT, nullptr);
 }
@@ -462,6 +462,7 @@ std::string Mesh::GetName() {
 }
 
 void Mesh::DrawInspector() {
+    ImGui::Checkbox("Casts Shadows", &m_CastShadows);
 
     if (ImGui::BeginTable("Mesh Basic", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable)) {
         ImGui::TableSetupColumn("Property", ImGuiTableColumnFlags_WidthFixed);
@@ -492,6 +493,18 @@ void Mesh::DrawInspector() {
         ImGui::Text("Normals");
         ImGui::TableSetColumnIndex(1);
         ImGui::Text("%d", m_Normals.size());
+
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0);
+        ImGui::Text("Tangents");
+        ImGui::TableSetColumnIndex(1);
+        ImGui::Text("%d", m_Tangents.size());
+
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0);
+        ImGui::Text("Bitangents");
+        ImGui::TableSetColumnIndex(1);
+        ImGui::Text("%d", m_Bitangents.size());
 
 		ImGui::EndTable();
 	}
@@ -531,30 +544,6 @@ void Mesh::DrawInspector() {
         ImGui::EndTable();
     }
 
-    /*ImGui::TableHeader("Basic Info");
-
-    ImGui::Text("Vertices: %d", m_Vertices.size());
-    ImGui::TableNextRow();
-    ImGui::Text("UVs: %d", m_UVs.size());
-    ImGui::TableNextRow();
-    ImGui::Text("Indices: %d", m_Indices.size());
-    ImGui::TableNextRow();
-
-    ImGui::Text("Normals: %d", m_Normals.size());
-
-    ImGui::TableNextColumn();
-    ImGui::TableHeader("Bounds");
-
-    Bounds bounds = GetBounds();
-
-    ImGui::Text("Min: %f, %f, %f", bounds.GetMin().x, bounds.GetMin().y, bounds.GetMin().z);
-    ImGui::TableNextRow();
-    ImGui::Text("Max: %f, %f, %f", bounds.GetMax().x, bounds.GetMax().y, bounds.GetMax().z);
-    ImGui::TableNextRow();
-    ImGui::Text("Center: %f, %f, %f", bounds.GetCenter().x, bounds.GetCenter().y, bounds.GetCenter().z);
-    ImGui::TableNextRow();
-    ImGui::Text("Size: %f, %f, %f", bounds.GetSize().x, bounds.GetSize().y, bounds.GetSize().z);*/
-
     ImGui::Columns(3, "Mesh Columns", false);
 
     ImGui::Separator();
@@ -578,8 +567,4 @@ void Mesh::DrawInspector() {
         RecalculateNormals();
         UpdateBuffers();
     }
-}
-
-ComponentType Mesh::GetType() {
-    return ComponentType::Mesh;
 }
