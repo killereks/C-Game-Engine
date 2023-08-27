@@ -104,6 +104,7 @@ void Engine::StartGameLoop(const std::string path, const std::string projectPath
     icons_config.PixelSnapH = true;
     icons_config.GlyphMinAdvanceX = iconFontSize;
     std::string fontPath = path + "/fa-solid-900.ttf";
+    std::cout << "Attempting to load font from " << fontPath << std::endl;
     io.Fonts->AddFontFromFileTTF(fontPath.c_str(), iconFontSize, &icons_config, icons_ranges);
 
     /* Loop until the user closes the window */
@@ -335,32 +336,12 @@ Engine::~Engine() {
 
 void Engine::SaveScene(std::string path)
 {
-    std::ofstream ofs(path, std::ios::binary);
-    size_t numEntities = m_Entities.size();
-    ofs.write(reinterpret_cast<const char*>(&numEntities), sizeof(numEntities));
 
-    for (Entity* entity : m_Entities) {
-        entity->Save(ofs);
-    }
 }
 
 void Engine::LoadScene(std::string path)
 {
-    std::ifstream ifs(path, std::ios::binary);
 
-    size_t numEntities;
-    ifs.read(reinterpret_cast<char*>(&numEntities), sizeof(numEntities));
-
-    std::cout << "Loading scene with " << numEntities << " entities" << std::endl;
-
-    m_Entities.clear();
-
-    for (int i = 0; i < numEntities; i++) {
-        Entity* entity = new Entity("Test");
-		entity->Load(ifs);
-
-        m_Entities.push_back(entity);
-	}
 
 }
 
@@ -598,10 +579,12 @@ void Engine::DrawEditor() {
             ImGui::DragFloat("FOV", &m_MainCamera->m_FOV, 1.f, 1.f, 179.f, "%.0f");
             ImGui::DragFloat("Near", &m_MainCamera->m_Near, 0.1f, 0.1f, 100.f, "%.1f");
             ImGui::DragFloat("Far", &m_MainCamera->m_Far, 1.f, 1.f, 1000.f, "%.0f");
-            ImGui::End();
+            ImGui::EndGroup();
 
             ImGui::EndMenu();
         }
+
+        ImGui::EndMenuBar();
     }
 
     ImGui::Begin(ICON_FA_SITEMAP " Hierarchy");
@@ -747,7 +730,8 @@ void Engine::DrawEditor() {
     }
     ImGui::End();
 
-    ImGui::PopStyleColor(2);
+    ImGui::PopStyleColor(1);
+    ImGui::PopStyleVar(1);
 
     ImGui::Begin("File System", 0, ImGuiWindowFlags_AlwaysVerticalScrollbar);
 
@@ -780,7 +764,7 @@ void Engine::DrawEditor() {
 
     ImGui::End();
 
-	ImGui::Render();
+    ImGui::End();
 }
 
 std::string Engine::GetValidName(std::string name) {

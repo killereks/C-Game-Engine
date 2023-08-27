@@ -1208,6 +1208,66 @@
     <ClInclude Include="Dependencies\images\stb_image.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Dependencies\yaml\include\contrib\anchordict.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Dependencies\yaml\include\contrib\graphbuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Dependencies\yaml\include\node\detail\impl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Dependencies\yaml\include\node\detail\iterator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Dependencies\yaml\include\node\detail\iterator_fwd.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Dependencies\yaml\include\node\detail\memory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Dependencies\yaml\include\node\detail\node.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Dependencies\yaml\include\node\detail\node_data.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Dependencies\yaml\include\node\detail\node_iterator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Dependencies\yaml\include\node\detail\node_ref.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Dependencies\yaml\include\node\convert.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Dependencies\yaml\include\node\emit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Dependencies\yaml\include\node\impl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Dependencies\yaml\include\node\iterator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Dependencies\yaml\include\node\node.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Dependencies\yaml\include\node\parse.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Dependencies\yaml\include\node\ptr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Dependencies\yaml\include\node\type.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Dependencies\yaml\src\ryml.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Dependencies\yaml\src\ryml_std.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Dependencies\GLEW\doc\advanced.html" />
@@ -1631,13 +1691,14 @@
     <None Include="src\shaders\default\fragment.glsl" />
     <None Include="src\shaders\default\vertex.glsl" />
     <None Include="Dependencies\GLFW\lib-vc2022\glfw3.dll" />
-    <None Include="Dependencies\GLEW\bin\Release\Win32\glew32.dll" />
-    <None Include="Dependencies\GLEW\bin\Release\Win32\glewinfo.exe" />
-    <None Include="Dependencies\GLEW\bin\Release\Win32\visualinfo.exe" />
     <None Include="Debug\shaders\default\vertex.glsl" />
     <None Include="Debug\shaders\default\fragment.glsl" />
     <None Include="Debug\shaders\shadows\fragment.glsl" />
     <None Include="Debug\shaders\shadows\vertex.glsl" />
+    <None Include="Dependencies\GLEW\bin\Release\x64\glew32.dll" />
+    <None Include="Dependencies\GLEW\bin\Release\Win32\glew32.dll" />
+    <None Include="Dependencies\GLEW\bin\Release\Win32\glewinfo.exe" />
+    <None Include="Dependencies\GLEW\bin\Release\Win32\visualinfo.exe" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="Dependencies\GLFW\lib-vc2022\glfw3.lib" />
