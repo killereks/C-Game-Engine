@@ -37,6 +37,17 @@ public:
 
     void StartGameLoop(std::string path, std::string projectPath);
 
+    template<typename T>
+    T* FindComponent() {
+        for (int i = 0; i < m_Entities.size(); i++) {
+			T* component = m_Entities[i]->GetComponent<T>();
+            if (component != nullptr) {
+				return component;
+			}
+		}
+		return nullptr;
+    }
+
 private:
     int m_WindowWidth;
     int m_WindowHeight;
@@ -68,6 +79,7 @@ private:
     void EditTransform(Entity* entity);
 
     std::string m_ProjectPath;
+    std::vector<std::string> m_FileSystemPath;
 
     LightMapper* lightMapper;
 

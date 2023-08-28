@@ -54,8 +54,7 @@ class Mesh : public Component {
     void CreateCube(glm::vec3 size);
     void CreateSphere(float radius, int rings, int sectors);
     void CreatePlane(glm::vec2 size);
-    void LoadFromFileFBX(std::string path);
-    void LoadFromFileOBJ(std::string path);
+    void LoadFromFile(std::string path);
 
     void Init() override;
     void Update(float dt) override;

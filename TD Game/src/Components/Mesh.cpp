@@ -15,11 +15,12 @@
 #include <fstream>
 #include <sstream>
 
-#include <OpenFBX/ofbx.h>
-#include "OBJ_Loader.h"
-
 #include "Icons/IconsFontAwesome5.h"
 #include <chrono>
+
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
 void Mesh::Update(float dt) {
 
@@ -66,103 +67,59 @@ Bounds Mesh::GetBounds()
     return Bounds(pos, size);
 }
 
-void Mesh::LoadFromFileFBX(std::string path) {
-    std::ifstream file(path, std::ios::binary | std::ios::ate);
-    std::streamsize size = file.tellg();
-    file.seekg(0, std::ios::beg);
-    std::vector<char> buffer(size);
-    file.read(buffer.data(), size);
+void Mesh::LoadFromFile(std::string path) {
+    Assimp::Importer importer;
 
-    auto flags = ofbx::LoadFlags::TRIANGULATE | ofbx::LoadFlags::IGNORE_CAMERAS;
-
-    ofbx::IScene* scene = ofbx::load((ofbx::u8*)buffer.data(), size, (ofbx::u64) flags);
-
-    if (scene == nullptr) {
-        std::cout << "Failed to load FBX file at " << path << std::endl;
-        return;
-    }
-
-    this->filePath = path;
-
-    std::vector<glm::vec3> verts;
-    std::vector<glm::vec2> uv;
-    std::vector<glm::vec3> norms;
-    std::vector<unsigned int> inds;
-
-    unsigned int indexOffset = 0;
-
-    int meshCount = scene->getMeshCount();
-    for (int i = 0; i < meshCount; i++) {
-        const ofbx::Mesh* mesh = scene->getMesh(i);
-
-        const ofbx::Geometry* geom = mesh->getGeometry();
-        const ofbx::Vec3* vertices = geom->getVertices();
-        const ofbx::Vec2* uvs = geom->getUVs();
-        const ofbx::Vec3* normals = geom->getNormals();
-
-        int vertexCount = geom->getVertexCount();
-        const int* indices = geom->getFaceIndices();
-
-        for (int j = 0; j < vertexCount; j++) {
-            verts.push_back(glm::vec3(vertices[j].x, vertices[j].y, vertices[j].z));
-            uv.push_back(glm::vec2(uvs[j].x, uvs[j].y));
-            norms.push_back(glm::vec3(normals[j].x, normals[j].y, normals[j].z));
-        }
-
-        if (geom->getIndexCount() % 3 != 0) {
-			std::cout << "Invalid index count" << std::endl;
-			return;
-		}
-
-        for (int j = 0; j < geom->getIndexCount(); j++) {
-            inds.push_back(indices[j] + indexOffset);
-        }
-
-        //indexOffset += vertexCount;
-
-        m_Vertices = verts;
-        m_UVs = uv;
-        m_Normals = norms;
-        m_Indices = inds;
-
-        UpdateBuffers();
-    }
-}
-
-void Mesh::LoadFromFileOBJ(std::string path) {
     auto clock = std::chrono::high_resolution_clock::now();
+    const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate);
+    auto end = std::chrono::high_resolution_clock::now();
 
-    objl::Loader loader;
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - clock).count();
 
-    this->filePath = path;
+    std::cout << "Loading " << path << " took " << duration << "ms" << std::endl;
 
-    loader.LoadFile(path);
+    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
+		std::cout << "Failed to load mesh file at " << path << std::endl;
+		return;
+	}
 
-    objl::Mesh mesh = loader.LoadedMeshes[0];
+    filePath = path;
+
+    clock = std::chrono::high_resolution_clock::now();
 
     m_Vertices.clear();
     m_UVs.clear();
     m_Normals.clear();
     m_Indices.clear();
     
-    for (int i = 0; i < mesh.Vertices.size(); i++) {
-		m_Vertices.push_back(glm::vec3(mesh.Vertices[i].Position.X, mesh.Vertices[i].Position.Y, mesh.Vertices[i].Position.Z));
-		m_UVs.push_back(glm::vec2(mesh.Vertices[i].TextureCoordinate.X, mesh.Vertices[i].TextureCoordinate.Y));
-		m_Normals.push_back(glm::vec3(mesh.Vertices[i].Normal.X, mesh.Vertices[i].Normal.Y, mesh.Vertices[i].Normal.Z));
+    aiMesh* mesh = scene->mMeshes[0];
+
+    m_Vertices.resize(mesh->mNumVertices);
+    m_Normals.resize(mesh->mNumVertices);
+    m_UVs.resize(mesh->mNumVertices);
+    m_Indices.resize(mesh->mNumFaces * 3);
+
+    for (int i = 0; i < mesh->mNumVertices; i++) {
+		m_Vertices[i] = glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
+        if (mesh->HasNormals()) {
+            m_Normals[i] = glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
+        }
+        if (mesh->HasTextureCoords(0)) {
+            m_UVs[i] = glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
+        }
 	}
 
-    for (int i = 0; i < mesh.Indices.size(); i++) {
-        m_Indices.push_back(mesh.Indices[i]);
+    for (int i = 0; i < mesh->mNumFaces; i++) {
+        aiFace face = mesh->mFaces[i];
+        for (unsigned int j = 0; j < face.mNumIndices; j++) {
+            m_Indices.push_back(face.mIndices[j]);
+		}
     }
 
-    if (m_Normals.size() == 0) {
-		RecalculateNormals();
-	}
+    end = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - clock).count();
 
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - clock).count();
-
-    std::cout << "Loaded mesh " << path << " in " << duration << "ms" << std::endl;
+    std::cout << "Processing mesh " << path << " in " << duration << "ms" << std::endl;
 
     UpdateBuffers();
 }

@@ -554,7 +554,7 @@ void Engine::LoadScene(std::string path)
                 meshComponent->filePath = mesh["File"].as<std::string>();
                 meshComponent->m_CastShadows = mesh["CastShadows"].as<bool>();
 
-                meshComponent->LoadFromFileOBJ(meshComponent->filePath);
+                meshComponent->LoadFromFile(meshComponent->filePath);
             }
 
 			m_Entities.push_back(ent);
@@ -712,7 +712,7 @@ void Engine::Render() {
 }
 
 void Engine::DrawEditor() {
-    if (ImGuiFileDialog::Instance()->Display("ChooseFBX")) {
+    if (ImGuiFileDialog::Instance()->Display("ChooseMesh")) {
         if (ImGuiFileDialog::Instance()->IsOk()) {
             std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
             std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
@@ -721,24 +721,7 @@ void Engine::DrawEditor() {
 
             Entity* ent = new Entity(GetValidName(modelName));
             Mesh* mesh = ent->AddComponent<Mesh>();
-            mesh->LoadFromFileFBX(filePathName);
-
-            m_Entities.push_back(ent);
-        }
-
-        ImGuiFileDialog::Instance()->Close();
-    }
-
-    if (ImGuiFileDialog::Instance()->Display("ChooseOBJ")) {
-        if (ImGuiFileDialog::Instance()->IsOk()) {
-            std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
-            std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
-
-            std::string modelName = filePathName.substr(filePathName.find_last_of("/\\") + 1);
-
-            Entity* ent = new Entity(GetValidName(modelName));
-            Mesh* mesh = ent->AddComponent<Mesh>();
-            mesh->LoadFromFileOBJ(filePathName);
+            mesh->LoadFromFile(filePathName);
 
             m_Entities.push_back(ent);
         }
@@ -751,14 +734,8 @@ void Engine::DrawEditor() {
             if (ImGui::MenuItem("Save Scene")) {
                 SaveScene(m_ProjectPath + "/main.scene");
             }
-            if (ImGui::BeginMenu("Open")) {
-                if (ImGui::MenuItem("FBX")) {
-                    ImGuiFileDialog::Instance()->OpenDialog("ChooseFBX", "Choose FBX", ".fbx", ".", 1, nullptr, ImGuiFileDialogFlags_Modal);
-                }
-                if (ImGui::MenuItem("OBJ")) {
-                    ImGuiFileDialog::Instance()->OpenDialog("ChooseOBJ", "Choose OBJ", ".obj", ".", 1, nullptr, ImGuiFileDialogFlags_Modal);
-                }
-                ImGui::EndMenu();
+            if (ImGui::MenuItem("Open Mesh...")) {
+                ImGuiFileDialog::Instance()->OpenDialog("ChooseMesh", "Choose File", ".fbx,.obj", ".", 1, nullptr, ImGuiFileDialogFlags_Modal);
             }
 
             ImGui::EndMenu();
@@ -863,6 +840,21 @@ void Engine::DrawEditor() {
     ImGui::PopStyleVar();
 
     ImGui::EndChild();
+
+    if (ImGui::BeginDragDropTarget()) {
+        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("FILE")) {
+            std::string payload_string = (const char*)payload->Data;
+
+            std::string modelName = payload_string.substr(payload_string.find_last_of("/\\") + 1);
+
+            Entity* ent = new Entity(GetValidName(modelName));
+            Mesh* mesh = ent->AddComponent<Mesh>();
+            mesh->LoadFromFile(payload_string);
+
+            m_Entities.push_back(ent);
+        }
+        ImGui::EndDragDropTarget();
+    }
 
     ImGui::End();
 
@@ -969,11 +961,27 @@ void Engine::DrawEditor() {
     ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.5f));
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
 
-    for (auto& p : std::filesystem::directory_iterator(m_ProjectPath)) {
+    std::string currentPath = m_ProjectPath+"\\";
+
+    for (std::string folder : m_FileSystemPath) {
+        currentPath += folder + "\\";
+    }
+
+    if (m_FileSystemPath.size() > 0) {
+        std::string previousFolder = currentPath.substr(0, currentPath.find_last_of("\\"));
+
+        if (ImGui::Button((ICON_FA_ARROW_LEFT" " + previousFolder).c_str(), ImVec2(-FLT_MIN, 0))) {
+            m_FileSystemPath.erase(m_FileSystemPath.begin() + m_FileSystemPath.size() - 1);
+        }
+        ImGui::Separator();
+    }
+
+    for (auto& p : std::filesystem::directory_iterator(currentPath)) {
         if (p.is_directory()) {
             std::string name = p.path().filename().string();
-            if (ImGui::Button(name.c_str(), ImVec2(-FLT_MIN, 0))) {
-				std::cout << name << std::endl;
+            if (ImGui::Button((ICON_FA_FOLDER" "+name).c_str(), ImVec2(-FLT_MIN, 0))) {
+                m_FileSystemPath.push_back(name);
+				break;
 			}
         }
         else {
@@ -981,15 +989,23 @@ void Engine::DrawEditor() {
             std::string ext = p.path().extension().string();
 
             if (ext == ".scene") {
-                if (ImGui::Button((ICON_FA_CUBES" " + name).c_str(), ImVec2(-FLT_MIN, 0))) {
+                if (ImGui::Button((ICON_FA_MOUNTAIN" " + name).c_str(), ImVec2(-FLT_MIN, 0))) {
 					LoadScene(p.path().string());
                 }
             }
-            else if (ext == ".png" || ext == ".jpg") {
-				if (ImGui::Button((ICON_FA_IMAGE" " + name).c_str(), ImVec2(-FLT_MIN, 0))) {}
+            else if (ext == ".fbx" || ext == ".obj") {
+                ImGui::Text((ICON_FA_CUBES" "+name).c_str());
+
+                if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
+                    std::string path = p.path().string();
+
+                    ImGui::SetDragDropPayload("FILE", path.c_str(), path.size() + 1);
+                    ImGui::Text("Dragging %s", p.path().filename().string().c_str());
+                    ImGui::EndDragDropSource();
+                }
             }
             else {
-                ImGui::Text(name.c_str());
+                ImGui::Text((ICON_FA_FILE" "+name).c_str());
             }
         }
 	}
