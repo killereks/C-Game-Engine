@@ -19,6 +19,7 @@
 #include "OBJ_Loader.h"
 
 #include "Icons/IconsFontAwesome5.h"
+#include <chrono>
 
 void Mesh::Update(float dt) {
 
@@ -129,6 +130,8 @@ void Mesh::LoadFromFileFBX(std::string path) {
 }
 
 void Mesh::LoadFromFileOBJ(std::string path) {
+    auto clock = std::chrono::high_resolution_clock::now();
+
     objl::Loader loader;
 
     this->filePath = path;
@@ -155,6 +158,12 @@ void Mesh::LoadFromFileOBJ(std::string path) {
     if (m_Normals.size() == 0) {
 		RecalculateNormals();
 	}
+
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - clock).count();
+
+    std::cout << "Loaded mesh " << path << " in " << duration << "ms" << std::endl;
+
     UpdateBuffers();
 }
 

@@ -8,6 +8,7 @@
 #include "Components/Entity.h"
 #include "Camera.h"
 #include "Texture.h"
+#include "PostProcess.h"
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -49,6 +50,9 @@ private:
 
     Shader* _defaultShader;
     Shader* _lightShader;
+    Shader* _postProcessShader;
+
+    PostProcess* _postProcess;
 
     std::vector<float> m_FPSGraph;
 

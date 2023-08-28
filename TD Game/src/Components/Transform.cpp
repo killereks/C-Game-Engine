@@ -45,20 +45,6 @@ void Transform::Translate(glm::vec3 translation) {
     m_Position += translation;
 }
 
-void Transform::Save(std::ostream& os)
-{
-    os << m_Position.x << " " << m_Position.y << " " << m_Position.z << std::endl;
-    os << m_Rotation.x << " " << m_Rotation.y << " " << m_Rotation.z << " " << m_Rotation.w << std::endl;
-    os << m_Scale.x << " " << m_Scale.y << " " << m_Scale.z << std::endl;
-}
-
-void Transform::Load(std::istream& is)
-{
-    is >> m_Position.x >> m_Position.y >> m_Position.z;
-	is >> m_Rotation.x >> m_Rotation.y >> m_Rotation.z >> m_Rotation.w;
-	is >> m_Scale.x >> m_Scale.y >> m_Scale.z;
-}
-
 void Transform::SetRotationEuler(glm::vec3 euler) {
     euler = euler * (3.141592653589793238463f / 180.0f);
 

@@ -23,6 +23,8 @@
 #include <filesystem>
 #include <Icons/IconsFontAwesome5.h>
 
+using namespace std::chrono;
+
 Engine::Engine(int width, int height) {
     GLFWwindow* window;
 
@@ -93,6 +95,13 @@ void Engine::StartGameLoop(const std::string path, const std::string projectPath
     lightShader->LoadFromFiles(shaderPath + "/shadows/vertex.glsl", shaderPath + "/shadows/fragment.glsl");
 
     _lightShader = lightShader;
+
+    Shader* postProcessShader = new Shader("PostProcess");
+    postProcessShader->LoadFromFiles(shaderPath + "/postprocess/vertex.glsl", shaderPath + "/postprocess/fragment.glsl");
+
+    _postProcessShader = postProcessShader;
+
+    _postProcess = new PostProcess();
 
     auto io = ImGui::GetIO();
 
@@ -327,7 +336,10 @@ Engine::~Engine() {
 	glfwTerminate();
 
     delete m_MainCamera;
+
 	delete _defaultShader;
+    delete _lightShader;
+    delete _postProcessShader;
 
     delete lightMapper;
 
@@ -509,6 +521,8 @@ void Engine::LoadScene(std::string path)
 
     m_Entities.clear();
 
+    auto yamlTimer = high_resolution_clock::now();
+
     // load entities
     YAML::Node entities = data["Entities"];
     if (entities) {
@@ -546,6 +560,12 @@ void Engine::LoadScene(std::string path)
 			m_Entities.push_back(ent);
         }
     }
+
+    auto end = high_resolution_clock::now();
+
+    auto duration = duration_cast<milliseconds>(end - yamlTimer).count();
+
+    std::cout << "Loaded Scene in " << duration << "ms" << std::endl;
 }
 
 void Engine::Awake() {
@@ -603,6 +623,8 @@ void Engine::Render() {
     Light directional_light;
     bool foundLight = false;
 
+    glm::mat4 lightSpaceMatrix = glm::mat4(1.0f);
+
     Camera* lightCam = nullptr;
 
     for (auto& entity : m_Entities) {
@@ -623,7 +645,7 @@ void Engine::Render() {
 
         _lightShader->Bind();
 
-        glm::mat4 lightSpaceMatrix = lightCam->GetProjectionMatrix() * directional_light.m_Owner->m_Transform.GetModelMatrix();
+        lightSpaceMatrix = lightCam->GetProjectionMatrix() * directional_light.m_Owner->m_Transform.GetModelMatrix();
 
         _lightShader->SetMat4("lightSpaceMatrix", lightSpaceMatrix);
 
@@ -648,6 +670,8 @@ void Engine::Render() {
     glViewport(0, 0, m_WindowWidth, m_WindowHeight);
 
     glCullFace(GL_BACK);
+
+    _postProcess->BindFBO(m_WindowWidth, m_WindowHeight);
 
     // RENDER PASS
     for (Entity* entity : m_Entities) {
@@ -677,7 +701,12 @@ void Engine::Render() {
         }
 	}
 
+    _postProcess->Unbind();
     _defaultShader->Unbind();
+
+    _postProcessShader->Bind();
+    
+    _postProcess->Draw(_postProcessShader);
 
     delete lightCam;
 }

@@ -24,9 +24,6 @@ public:
 
     void Translate(glm::vec3 translation);
 
-    void Save(std::ostream& os);
-    void Load(std::istream& is);
-
     void SetRotationEuler(glm::vec3 euler);
     glm::vec3 GetEuler();
 };
