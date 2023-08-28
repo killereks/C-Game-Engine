@@ -86,11 +86,11 @@ int main(int argc, char** argv){
     std::string cwd = argv[0];
     std::string pathWithoutExe = cwd.substr(0, cwd.find_last_of("\\/"));
 
-    std::string kPersistentPath = "";
+    std::string kPersistentPath;
 
     char out[MAX_PATH];
     if (SHGetSpecialFolderPathA(NULL, out, CSIDL_APPDATA, 0)) {
-        kPersistentPath = std::string(out)+"\\GameEngine";
+        kPersistentPath = std::string(out)+"/GameEngine";
         std::cout << "Persistent path: " << kPersistentPath << std::endl;
 
         CreateFolderIfMissing(kPersistentPath);

@@ -14,6 +14,7 @@
 #include "../Camera.h"
 #include "../Shader.h"
 #include "../Bounds.h"
+#include "../Material.h"
 
 class Mesh : public Component {
     std::vector<glm::vec3> m_Vertices;
@@ -42,6 +43,8 @@ class Mesh : public Component {
     std::string filePath;
 
     std::string defaultObject;
+
+    Material* mat;
 
     Mesh(std::vector<glm::vec3> vertices, std::vector<glm::vec2> uvs, std::vector<unsigned int> indices);
     Mesh();

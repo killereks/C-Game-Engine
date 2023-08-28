@@ -1811,6 +1811,9 @@
     <ClInclude Include="Dependencies\contrib\utf8cpp\source\utf8.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DEPENDENCIES\OBJ_LOADER.H">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Dependencies\GLEW\doc\advanced.html" />

@@ -22,12 +22,14 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+#include <filedialog/ImGuiFileDialog.h>
+
 void Mesh::Update(float dt) {
 
 }
 
 void Mesh::Init() {
-
+    mat = new Material();
 }
 
 Mesh::Mesh() {
@@ -430,6 +432,17 @@ std::string Mesh::GetName() {
 void Mesh::DrawInspector() {
     ImGui::Checkbox("Casts Shadows", &m_CastShadows);
 
+    ImGui::Image(mat->GetDiffuseID(), ImVec2(128, 128));
+
+    if (ImGui::BeginDragDropTarget()) {
+        if (ImGui::AcceptDragDropPayload("TEXTURE")) {
+		    std::string path = std::string((char*)ImGui::GetDragDropPayload()->Data);
+            mat->SetDiffusePath(path);
+	    }
+
+        ImGui::EndDragDropTarget();
+    }
+
     if (ImGui::BeginTable("Mesh Basic", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable)) {
         ImGui::TableSetupColumn("Property", ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
@@ -533,4 +546,9 @@ void Mesh::DrawInspector() {
         RecalculateNormals();
         UpdateBuffers();
     }
+
+    if (ImGui::Button(ICON_FA_CALCULATOR" Recalculate Tangents", ImVec2(-FLT_MIN, 0))) {
+		CalculateTBN();
+		UpdateBuffers();
+	}
 }

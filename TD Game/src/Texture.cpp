@@ -23,8 +23,8 @@ void Texture::LoadFromFile(const std::string path)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	int numChannels;
-	unsigned char* data = stbi_load(path.c_str(), &m_Width, &m_Height, &numChannels, 0);
-
+	unsigned char* data = stbi_load(path.c_str(), &m_Width, &m_Height, &numChannels, 3);
+	
 	if (data) {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_Width, m_Height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);

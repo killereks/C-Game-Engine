@@ -22,6 +22,7 @@
 #include <Light.h>
 #include <filesystem>
 #include <Icons/IconsFontAwesome5.h>
+#include <images/stb_image.h>
 
 using namespace std::chrono;
 
@@ -118,6 +119,13 @@ void Engine::StartGameLoop(const std::string path, const std::string projectPath
     std::cout << "Attempting to load font from " << fontPath << std::endl;
     io.Fonts->AddFontFromFileTTF(fontPath.c_str(), iconFontSize, &icons_config, icons_ranges);
 
+    std::string fontPath2 = path + "/Montserrat-Regular.ttf";
+    std::cout << "Attempting to load default font from " << fontPath2 << std::endl;
+    ImFont* mainFont = io.Fonts->AddFontFromFileTTF(fontPath2.c_str(), 24.0f);
+    io.FontDefault = mainFont;
+
+    IM_ASSERT(mainFont != NULL);
+
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) {
         float m_frameTime = (float)glfwGetTime();
@@ -210,7 +218,6 @@ void Engine::StartGameLoop(const std::string path, const std::string projectPath
         }
 
         ImGui::End();
-
         DrawEditor();
 
         ImGui::Render();
@@ -259,6 +266,13 @@ void Engine::StartGameLoop(const std::string path, const std::string projectPath
 					m_SelectedEntity = nullptr;
 				}
             }
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_DELETE) == GLFW_PRESS) {
+            if (m_SelectedEntity) {
+                m_Entities.erase(std::remove(m_Entities.begin(), m_Entities.end(), m_SelectedEntity), m_Entities.end());
+				m_SelectedEntity = nullptr;
+			}
         }
 
         int rightClick = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
@@ -680,6 +694,8 @@ void Engine::Render() {
         if (entity->TryGetComponent<Mesh>(mesh)) {
             mesh->SetupRender(m_MainCamera, _defaultShader);
 
+            mesh->mat->Bind(_defaultShader);
+
             if (foundLight) {
                 lightMapper->SetUniforms(_defaultShader);
 
@@ -728,14 +744,26 @@ void Engine::DrawEditor() {
 
         ImGuiFileDialog::Instance()->Close();
     }
+
+    if (ImGuiFileDialog::Instance()->Display("SaveScene")) {
+        if (ImGuiFileDialog::Instance()->IsOk()) {
+            std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+            std::string folderPath = ImGuiFileDialog::Instance()->GetCurrentPath();
+
+            SaveScene(folderPath + "/" + filePathName);
+        }
+
+        ImGuiFileDialog::Instance()->Close();
+    }
+
     // create top toolbar
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu(ICON_FA_FILE" File")) {
             if (ImGui::MenuItem("Save Scene")) {
-                SaveScene(m_ProjectPath + "/main.scene");
+                ImGuiFileDialog::Instance()->OpenDialog("SaveScene", "Save File", ".scene", m_ProjectPath+"/myScene", 1, nullptr, ImGuiFileDialogFlags_Modal | ImGuiFileDialogFlags_ConfirmOverwrite);
             }
             if (ImGui::MenuItem("Open Mesh...")) {
-                ImGuiFileDialog::Instance()->OpenDialog("ChooseMesh", "Choose File", ".fbx,.obj", ".", 1, nullptr, ImGuiFileDialogFlags_Modal);
+                ImGuiFileDialog::Instance()->OpenDialog("ChooseMesh", "Choose File", ".fbx,.obj", m_ProjectPath+"/myMesh", 1, nullptr, ImGuiFileDialogFlags_Modal);
             }
 
             ImGui::EndMenu();
@@ -792,6 +820,19 @@ void Engine::DrawEditor() {
             ImGui::EndMenu();
         }
 
+        if (ImGui::BeginMenu(ICON_FA_EDIT" Scene Settings")) {
+            ImGui::BeginGroup();
+            if (ImGui::Button("WORLD")) {
+                m_CurrentMode = ImGuizmo::WORLD;
+            }
+            if (ImGui::Button("LOCAL")) {
+				m_CurrentMode = ImGuizmo::LOCAL;
+			}
+            ImGui::EndGroup();
+
+			ImGui::EndMenu();
+        }
+
         ImGui::EndMenuBar();
     }
 
@@ -812,24 +853,10 @@ void Engine::DrawEditor() {
 			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
 		}
 
-        float windowWidth = ImGui::GetWindowWidth();
-        float buttonWidth = windowWidth - 50;
-
         std::string name = ICON_FA_CUBE" " + entity->m_Name;
-        if (ImGui::Button(name.c_str(), ImVec2(buttonWidth, 0))) {
+        if (ImGui::Button(name.c_str(), ImVec2(-FLT_MIN, 0))) {
             m_SelectedEntity = entity;
         }
-
-        ImGui::SameLine();
-        ImGui::PushID(index);
-
-        if (ImGui::Button(ICON_FA_TRASH, ImVec2(50, 0))) {
-			m_Entities.erase(m_Entities.begin() + index);
-			delete entity;
-			m_SelectedEntity = nullptr;
-            --index;
-		}
-        ImGui::PopID();
 
         index++;
 
@@ -864,7 +891,9 @@ void Engine::DrawEditor() {
     ImGui::Begin(ICON_FA_BINOCULARS" Inspector", NULL, ImGuiWindowFlags_NoResize);
 
     if (m_SelectedEntity != nullptr) {
-        ImGui::Text(m_SelectedEntity->m_Name.c_str());
+        if (ImGui::InputText("Name", &m_SelectedEntity->m_Name[0], 20)) {
+            m_SelectedEntity->m_Name = GetValidName(m_SelectedEntity->m_Name);
+        }
 
         ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.6f, 0.6f, 0.6f, 0.6f));
 
@@ -1004,6 +1033,17 @@ void Engine::DrawEditor() {
                     ImGui::EndDragDropSource();
                 }
             }
+            else if (ext == ".png" || ext == ".jpeg" || ext == ".jpg") {
+                ImGui::Text((ICON_FA_FILE_IMAGE" "+name).c_str());
+
+                if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
+					std::string path = p.path().string();
+
+					ImGui::SetDragDropPayload("TEXTURE", path.c_str(), path.size() + 1);
+					ImGui::Text("Dragging %s", p.path().filename().string().c_str());
+					ImGui::EndDragDropSource();
+				}
+            }
             else {
                 ImGui::Text((ICON_FA_FILE" "+name).c_str());
             }
@@ -1056,7 +1096,7 @@ void Engine::EditTransform(Entity* ent) {
     float* viewMatrixPtr = glm::value_ptr(viewMatrix);
     float* projectionMatrixPtr = glm::value_ptr(projectionMatrix);
 
-    ImGuizmo::Manipulate(viewMatrixPtr, projectionMatrixPtr, m_CurrentOperation, ImGuizmo::WORLD, matrixPtr);
+    ImGuizmo::Manipulate(viewMatrixPtr, projectionMatrixPtr, m_CurrentOperation, m_CurrentMode, matrixPtr);
 
     glm::vec3 translation, rotation, scale;
     ImGuizmo::DecomposeMatrixToComponents(matrixPtr, &translation.x, &rotation.x, &scale.x);

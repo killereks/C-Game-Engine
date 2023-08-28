@@ -15,6 +15,10 @@ class Texture
 	unsigned int GetWidth() { return m_Width; }
 	unsigned int GetHeight() { return m_Height; }
 
+	unsigned int GetID() {
+		return m_RendererID;
+	}
+
 	private:
 	unsigned int m_RendererID;
 	std::string m_FilePath;

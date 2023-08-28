@@ -72,6 +72,7 @@ private:
     Entity* m_SelectedEntity;
 
     ImGuizmo::OPERATION m_CurrentOperation;
+    ImGuizmo::MODE m_CurrentMode;
 
     void DrawEditor();
     std::string GetValidName(std::string name);

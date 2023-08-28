@@ -2,21 +2,21 @@
 
 #include "Shader.h"
 #include "Texture.h"
+#include <imgui.h>
 
 class Material
 {
+
 	public:
 	Material();
 	~Material();
 
-	void Bind();
+	void Bind(Shader* shader);
 
-	Shader* m_Shader;
+	void SetDiffusePath(std::string path);
 
-	std::string m_DiffusePath;
-	std::string m_SpecularPath;
-	std::string m_NormalPath;
-	std::string m_HeightPath;
-	std::string m_OcclusionPath;
+	ImTextureID GetDiffuseID();
+
+	Texture* m_Diffuse;
 };
 

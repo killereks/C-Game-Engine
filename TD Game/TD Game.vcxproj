@@ -311,6 +311,7 @@
     <ClInclude Include="Dependencies\Icons\IconsMaterialDesign.h" />
     <ClInclude Include="Dependencies\Icons\IconsMaterialDesignIcons.h" />
     <ClInclude Include="Dependencies\images\stb_image.h" />
+    <ClInclude Include="DEPENDENCIES\OBJ_LOADER.H" />
     <ClInclude Include="Dependencies\yaml\include\contrib\anchordict.h" />
     <ClInclude Include="Dependencies\yaml\include\contrib\graphbuilder.h" />
     <ClInclude Include="Dependencies\yaml\include\node\convert.h" />
