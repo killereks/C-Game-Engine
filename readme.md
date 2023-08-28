@@ -1,3 +1,7 @@
+Textures, shadows, model loading, dragging and dropping.
+
+https://github.com/killereks/CPP-Game-Engine/assets/10748374/43fc2d8b-c421-44b6-aa33-31c70eab68ab
+
 Working gizmos for translation, rotation and scale.
 
 https://github.com/killereks/CPP-Game-Engine/assets/10748374/39c826b9-82ef-4f1c-8ed1-38f18c5d9d8b
